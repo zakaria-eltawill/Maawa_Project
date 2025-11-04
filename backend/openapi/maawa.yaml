@@ -1,0 +1,1002 @@
+openapi: 3.1.0
+info:
+  title: Maawa API
+  version: "1.0.0"
+  description: |
+    Mobile API for Maawa (Libya property rental marketplace).
+    Auth: JWT access tokens (15m) + rotating Refresh Tokens (30d).
+    Admin Blade uses session/CSRF (not covered here).
+
+servers:
+  - url: https://api.maawa.example/v1
+    description: Production
+  - url: http://localhost:8000/v1
+    description: Local
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  ########################
+  # Auth (JWT)
+  ########################
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user (tenant/owner)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthRegisterRequest' }
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthRegisterResponse' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+        "409": { $ref: '#/components/responses/Conflict' }
+      security: []  # public
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and receive access & refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthLoginRequest' }
+      responses:
+        "200":
+          description: Tokens issued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthLoginResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+      security: []  # public
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Exchange refresh_token for a new access token (rotating)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthRefreshRequest' }
+      responses:
+        "200":
+          description: Refreshed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthRefreshResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "409": { $ref: '#/components/responses/Conflict' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+      security: []  # public
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (revoke current refresh token or all)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthLogoutRequest' }
+      responses:
+        "204": { description: Logged out }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+
+  /me:
+    get:
+      tags: [Auth]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MeResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+
+  ########################
+  # Properties
+  ########################
+  /properties:
+    get:
+      tags: [Properties]
+      summary: List properties with filters
+      parameters:
+        - $ref: '#/components/parameters/City'
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/MinPrice'
+        - $ref: '#/components/parameters/MaxPrice'
+        - $ref: '#/components/parameters/AvailableFrom'
+        - $ref: '#/components/parameters/AvailableTo'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Paginated property list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PropertyListResponse' }
+
+  /properties/{id}:
+    get:
+      tags: [Properties]
+      summary: Get a property by ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        "200":
+          description: Property details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PropertyDetailResponse' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
+  /properties/{id}/reviews:
+    get:
+      tags: [Reviews]
+      summary: List reviews for a property
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Reviews list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewListResponse' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
+  ########################
+  # Bookings
+  ########################
+  /bookings:
+    get:
+      tags: [Bookings]
+      summary: List bookings for current role
+      parameters:
+        - $ref: '#/components/parameters/BookingStatus'
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Bookings list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingListResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Bookings]
+      summary: Create booking (PENDING)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookingCreateRequest' }
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingCreateResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "409": { $ref: '#/components/responses/Conflict' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+
+  /owner/bookings/{id}/decision:
+    post:
+      tags: [Bookings]
+      summary: Owner decision (ACCEPT/REJECT)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OwnerDecisionRequest' }
+      responses:
+        "200":
+          description: Decision applied
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OwnerDecisionResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "409": { $ref: '#/components/responses/Conflict' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+
+  ########################
+  # Payments (Mock)
+  ########################
+  /payments/mock:
+    post:
+      tags: [Payments]
+      summary: Mock payment to confirm booking
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MockPaymentRequest' }
+      responses:
+        "200":
+          description: Booking confirmed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MockPaymentResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "409": { $ref: '#/components/responses/Conflict' }
+        "410": { $ref: '#/components/responses/Gone' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+
+  ########################
+  # Moderation (Proposals)
+  ########################
+  /proposals:
+    post:
+      tags: [Moderation]
+      summary: Create owner proposal (ADD/EDIT/DELETE)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProposalCreateRequest' }
+      responses:
+        "201":
+          description: Proposal created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProposalCreateResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "409": { $ref: '#/components/responses/Conflict' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+
+  /owner/proposals:
+    get:
+      tags: [Moderation]
+      summary: List proposals for current owner
+      parameters:
+        - $ref: '#/components/parameters/ProposalStatus'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Proposals list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProposalListResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+
+  /admin/proposals:
+    get:
+      tags: [Admin]
+      summary: Admin moderation queue
+      parameters:
+        - $ref: '#/components/parameters/ProposalStatus'
+        - $ref: '#/components/parameters/OwnerId'
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Moderation queue
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProposalListAdminResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+
+  /admin/proposals/{id}/review:
+    post:
+      tags: [Admin]
+      summary: Review proposal (APPROVED/REJECTED)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProposalReviewRequest' }
+      responses:
+        "200":
+          description: Review result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProposalReviewResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "409": { $ref: '#/components/responses/Conflict' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List users (admin)
+      parameters:
+        - name: role
+          in: query
+          schema: { type: string, enum: [tenant, owner, admin] }
+        - name: email
+          in: query
+          schema: { type: string }
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/UserAdmin' }
+                  next_cursor: { type: string, nullable: true }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+
+  /admin/users/{id}:
+    patch:
+      tags: [Admin]
+      summary: Update user role
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role: { type: string, enum: [tenant, owner, admin] }
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserAdmin' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "409": { $ref: '#/components/responses/Conflict' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Admin]
+      summary: Delete a user
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        "204": { description: Deleted }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "409": { $ref: '#/components/responses/Conflict' }
+
+  ########################
+  # Reviews
+  ########################
+  /properties/{id}/reviews:
+    post:
+      tags: [Reviews]
+      summary: Create a review (tenant after COMPLETED stay)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewCreateRequest' }
+      responses:
+        "201":
+          description: Review created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewCreateResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+
+  ########################
+  # Device Tokens (FCM)
+  ########################
+  /me/fcm-tokens:
+    post:
+      tags: [Notifications]
+      summary: Add device FCM token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FcmTokenStoreRequest' }
+      responses:
+        "201":
+          description: Stored
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FcmTokenStoreResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+
+  /me/fcm-tokens/{token}:
+    delete:
+      tags: [Notifications]
+      summary: Remove device FCM token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string, maxLength: 255 }
+      responses:
+        "204": { description: Removed }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+
+components:
+
+  ########################
+  # Security
+  ########################
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        Bearer access JWT. TTL 15 minutes. Refresh via /auth/refresh using opaque rotating refresh_token.
+
+  ########################
+  # Parameters
+  ########################
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+    City:
+      name: city
+      in: query
+      schema: { type: string, maxLength: 80 }
+
+    Type:
+      name: type
+      in: query
+      schema:
+        type: string
+        enum: [apartment, villa, chalet]
+
+    MinPrice:
+      name: min_price
+      in: query
+      schema: { type: number, format: float, minimum: 0 }
+
+    MaxPrice:
+      name: max_price
+      in: query
+      schema: { type: number, format: float, minimum: 0 }
+
+    AvailableFrom:
+      name: available_from
+      in: query
+      schema: { type: string, format: date }
+
+    AvailableTo:
+      name: available_to
+      in: query
+      schema: { type: string, format: date }
+
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+
+    PerPage:
+      name: per_page
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+
+    Sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        description: Comma-separated fields. Prefix with '-' for desc.
+        example: "-price,city"
+
+    BookingStatus:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [PENDING, ACCEPTED, CONFIRMED, REJECTED, CANCELED, EXPIRED, COMPLETED]
+
+    FromDate:
+      name: from
+      in: query
+      schema: { type: string, format: date }
+
+    ToDate:
+      name: to
+      in: query
+      schema: { type: string, format: date }
+
+    ProposalStatus:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [PENDING, APPROVED, REJECTED]
+
+    OwnerId:
+      name: owner_id
+      in: query
+      schema: { type: string, format: uuid }
+
+    IdempotencyKey:
+      name: X-Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 8, maxLength: 128 }
+
+  ########################
+  # Common Schemas
+  ########################
+  schemas:
+
+    Problem:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    CursorMeta:
+      type: object
+      properties:
+        next_cursor: { type: string, nullable: true }
+        prev_cursor: { type: string, nullable: true }
+
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        role:
+          type: string
+          enum: [tenant, owner, admin]
+
+    UserAdmin:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            created_at: { type: string, format: date-time }
+
+    PropertySummary:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        city: { type: string }
+        type:
+          type: string
+          enum: [apartment, villa, chalet]
+        price: { type: number, format: float }
+        thumbnail: { type: string }
+        avg_rating: { type: number, format: float, nullable: true }
+
+    PropertyDetail:
+      allOf:
+        - $ref: '#/components/schemas/PropertySummary'
+        - type: object
+          properties:
+            description: { type: string }
+            amenities:
+              type: array
+              items: { type: string }
+            photos:
+              type: array
+              items:
+                type: object
+                properties:
+                  url: { type: string }
+                  position: { type: integer }
+            owner:
+              type: object
+              properties:
+                id: { type: string, format: uuid }
+                name: { type: string }
+            availability:
+              type: object
+              properties:
+                unavailable_dates:
+                  type: array
+                  items: { type: string, format: date }
+            location:
+              type: object
+              properties:
+                latitude: { type: number, format: float, example: 32.115 }
+                longitude: { type: number, format: float, example: 20.067 }
+                map_url: { type: string, example: "https://www.google.com/maps?q=32.115,20.067" }
+            reviews_count: { type: integer }
+
+    Booking:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        property_id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        check_in: { type: string, format: date }
+        check_out: { type: string, format: date }
+        guests: { type: integer }
+        total: { type: number, format: float }
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, CONFIRMED, REJECTED, CANCELED, EXPIRED, COMPLETED]
+        payment_due_at: { type: string, format: date-time, nullable: true }
+
+    Proposal:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        owner_id: { type: string, format: uuid }
+        property_id: { type: string, format: uuid, nullable: true }
+        type:
+          type: string
+          enum: [ADD, EDIT, DELETE]
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+        notes: { type: string, nullable: true }
+        payload:
+          type: object
+          description: "For ADD: full property; for EDIT: diff fields; for DELETE: reason captured separately."
+
+    Review:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        booking_id: { type: string, format: uuid }
+        property_id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, maxLength: 500 }
+
+    ########################
+    # Request/Response Schemas
+    ########################
+
+    # Auth
+    AuthRegisterRequest:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        role:
+          type: string
+          enum: [tenant, owner]
+
+    AuthRegisterResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        access_token: { type: string }
+        token_type: { type: string, example: Bearer }
+        expires_in: { type: integer, example: 900 }
+        refresh_token: { type: string }
+
+    AuthLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+
+    AuthLoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/AuthRegisterResponse'
+
+    AuthRefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string }
+
+    AuthRefreshResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, example: Bearer }
+        expires_in: { type: integer, example: 900 }
+        refresh_token: { type: string }
+
+    AuthLogoutRequest:
+      type: object
+      properties:
+        all: { type: boolean, default: false }
+
+    MeResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        role:
+          type: string
+          enum: [tenant, owner, admin]
+        fcm_tokens:
+          type: array
+          items: { type: string }
+
+    # Properties
+    PropertyListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/PropertySummary' }
+        next_cursor: { type: string, nullable: true }
+
+    PropertyDetailResponse:
+      $ref: '#/components/schemas/PropertyDetail'
+
+    # Bookings
+    BookingCreateRequest:
+      type: object
+      required: [property_id, check_in, check_out, guests]
+      properties:
+        property_id: { type: string, format: uuid }
+        check_in: { type: string, format: date }
+        check_out: { type: string, format: date }
+        guests: { type: integer, minimum: 1 }
+
+    BookingCreateResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [PENDING]
+        total: { type: number, format: float }
+        payment_window: { type: string, nullable: true }
+
+    BookingListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Booking' }
+        next_cursor: { type: string, nullable: true }
+
+    OwnerDecisionRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [ACCEPT, REJECT]
+        reason:
+          type: string
+          nullable: true
+          maxLength: 300
+
+    OwnerDecisionResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [ACCEPTED, REJECTED]
+        payment_due_at: { type: string, format: date-time, nullable: true }
+
+    # Payments
+    MockPaymentRequest:
+      type: object
+      required: [booking_id]
+      properties:
+        booking_id: { type: string, format: uuid }
+
+    MockPaymentResponse:
+      type: object
+      properties:
+        booking_id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [CONFIRMED]
+        receipt_no: { type: string }
+        paid_at: { type: string, format: date-time }
+
+    # Moderation
+    ProposalCreateRequest:
+      oneOf:
+        - type: object
+          required: [type, payload]
+          properties:
+            type: { type: string, const: ADD }
+            payload:
+              type: object
+              description: Property fields for ADD
+              properties:
+                location:
+                  type: object
+                  required: [latitude, longitude]
+                  properties:
+                    latitude: { type: number, format: float, minimum: -90, maximum: 90 }
+                    longitude: { type: number, format: float, minimum: -180, maximum: 180 }
+        - type: object
+          required: [type, property_id, version, payload]
+          properties:
+            type: { type: string, const: EDIT }
+            property_id: { type: string, format: uuid }
+            version: { type: integer, minimum: 1 }
+            payload:
+              type: object
+              description: Partial fields to update
+              properties:
+                location:
+                  type: object
+                  properties:
+                    latitude: { type: number, format: float, minimum: -90, maximum: 90 }
+                    longitude: { type: number, format: float, minimum: -180, maximum: 180 }
+        - type: object
+          required: [type, property_id, reason]
+          properties:
+            type: { type: string, const: DELETE }
+            property_id: { type: string, format: uuid }
+            reason: { type: string, minLength: 3 }
+
+    ProposalCreateResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [PENDING]
+
+    ProposalListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Proposal' }
+        next_cursor: { type: string, nullable: true }
+
+    ProposalListAdminResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProposalListResponse'
+        - type: object
+          properties:
+            # Diff may be computed on the server for EDIT proposals
+            diff:
+              type: object
+              additionalProperties: true
+              nullable: true
+
+    ProposalReviewRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [APPROVED, REJECTED]
+        notes:
+          type: string
+          nullable: true
+          maxLength: 500
+
+    ProposalReviewResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [APPROVED, REJECTED]
+        applied_at: { type: string, format: date-time, nullable: true }
+
+    # Reviews
+    ReviewCreateRequest:
+      type: object
+      required: [rating]
+      properties:
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, maxLength: 500, nullable: true }
+
+    ReviewCreateResponse:
+      $ref: '#/components/schemas/Review'
+
+    ReviewListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Review' }
+        next_cursor: { type: string, nullable: true }
+
+    # FCM
+    FcmTokenStoreRequest:
+      type: object
+      required: [token, platform]
+      properties:
+        token: { type: string, minLength: 10 }
+        platform:
+          type: string
+          enum: [android, ios, web]
+
+    FcmTokenStoreResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        token: { type: string }
+
+  ########################
+  # Standard Responses
+  ########################
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            token_expired:
+              value:
+                type: "about:blank"
+                title: "Unauthorized"
+                status: 401
+                detail: "token_expired"
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+    NotFound:
+      description: Not Found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+    Conflict:
+      description: Conflict
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+    Gone:
+      description: Gone
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+    ValidationError:
+      description: Validation Error
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+

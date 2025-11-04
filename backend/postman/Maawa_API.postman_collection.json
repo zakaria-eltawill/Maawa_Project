@@ -1,0 +1,1085 @@
+{
+	"info": {
+		"_postman_id": "maawa-api-v1",
+		"name": "Maawa API v1",
+		"description": "Complete API collection for Maawa property rental marketplace",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "maawa"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('access_token', jsonData.access_token);",
+									"    pm.environment.set('refresh_token', jsonData.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"tenant\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user (tenant/owner)"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('access_token', jsonData.access_token);",
+									"    pm.environment.set('refresh_token', jsonData.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login and receive access & refresh tokens"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('access_token', jsonData.access_token);",
+									"    pm.environment.set('refresh_token', jsonData.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/refresh",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Exchange refresh_token for a new access token (rotating)"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"all\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout (revoke current refresh token or all)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"me"
+							]
+						},
+						"description": "Get current user profile"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Properties",
+			"item": [
+				{
+					"name": "List Properties",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/properties?city=Benghazi&type=apartment&min_price=100&max_price=500&per_page=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"properties"
+							],
+							"query": [
+								{
+									"key": "city",
+									"value": "Benghazi",
+									"description": "Filter by city"
+								},
+								{
+									"key": "type",
+									"value": "apartment",
+									"description": "apartment, villa, chalet"
+								},
+								{
+									"key": "min_price",
+									"value": "100"
+								},
+								{
+									"key": "max_price",
+									"value": "500"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						},
+						"description": "List properties with filters"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Property by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/properties/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"properties",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Property UUID"
+								}
+							]
+						},
+						"description": "Get a property by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "List Property Reviews",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/properties/:id/reviews",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"properties",
+								":id",
+								"reviews"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Property UUID"
+								}
+							]
+						},
+						"description": "List reviews for a property"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "List Bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings?status=PENDING&per_page=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bookings"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "PENDING",
+									"description": "PENDING, ACCEPTED, CONFIRMED, REJECTED, CANCELED, EXPIRED, COMPLETED"
+								},
+								{
+									"key": "from",
+									"value": "",
+									"description": "From date (YYYY-MM-DD)"
+								},
+								{
+									"key": "to",
+									"value": "",
+									"description": "To date (YYYY-MM-DD)"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						},
+						"description": "List bookings for current role"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('booking_id', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Idempotency-Key",
+								"value": "{{$randomUUID}}",
+								"description": "Idempotency key (required)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"property_id\": \"{{property_id}}\",\n    \"check_in\": \"2025-12-01\",\n    \"check_out\": \"2025-12-05\",\n    \"guests\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/bookings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bookings"
+							]
+						},
+						"description": "Create booking (PENDING)"
+					},
+					"response": []
+				},
+				{
+					"name": "Owner Decision (Accept/Reject)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"decision\": \"ACCEPT\",\n    \"reason\": \"Approved for booking\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/owner/bookings/:id/decision",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owner",
+								"bookings",
+								":id",
+								"decision"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{booking_id}}",
+									"description": "Booking UUID"
+								}
+							]
+						},
+						"description": "Owner decision (ACCEPT/REJECT)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Mock Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Idempotency-Key",
+								"value": "{{$randomUUID}}",
+								"description": "Idempotency key (required)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"booking_id\": \"{{booking_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/payments/mock",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"payments",
+								"mock"
+							]
+						},
+						"description": "Mock payment to confirm booking"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Moderation (Proposals)",
+			"item": [
+				{
+					"name": "Create Proposal (ADD)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('proposal_id', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+                            "raw": "{\n    \"type\": \"ADD\",\n    \"payload\": {\n        \"title\": \"Beautiful Apartment in Benghazi\",\n        \"description\": \"Spacious 2-bedroom apartment with sea view\",\n        \"city\": \"Benghazi\",\n        \"type\": \"apartment\",\n        \"price\": 250.00,\n        \"location\": { \"latitude\": 32.115, \"longitude\": 20.067 },\n        \"amenities\": [\"wifi\", \"parking\", \"balcony\"],\n        \"photos\": [\n            {\"url\": \"https://example.com/photo1.jpg\", \"position\": 0},\n            {\"url\": \"https://example.com/photo2.jpg\", \"position\": 1}\n        ]\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/proposals",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proposals"
+							]
+						},
+						"description": "Create owner proposal (ADD)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Proposal (EDIT)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"EDIT\",\n    \"property_id\": \"{{property_id}}\",\n    \"version\": 1,\n    \"payload\": {\n        \"price\": 275.00,\n        \"description\": \"Updated description with new amenities\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/proposals",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proposals"
+							]
+						},
+						"description": "Create owner proposal (EDIT)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Proposal (DELETE)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"DELETE\",\n    \"property_id\": \"{{property_id}}\",\n    \"reason\": \"Property no longer available for rent\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/proposals",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proposals"
+							]
+						},
+						"description": "Create owner proposal (DELETE)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Owner Proposals",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/proposals?status=PENDING&per_page=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owner",
+								"proposals"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "PENDING",
+									"description": "PENDING, APPROVED, REJECTED"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						},
+						"description": "List proposals for current owner"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Admin Moderation Queue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/proposals?status=PENDING&per_page=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"proposals"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "PENDING",
+									"description": "PENDING, APPROVED, REJECTED"
+								},
+								{
+									"key": "owner_id",
+									"value": "",
+									"description": "Filter by owner UUID"
+								},
+								{
+									"key": "from",
+									"value": "",
+									"description": "From date (YYYY-MM-DD)"
+								},
+								{
+									"key": "to",
+									"value": "",
+									"description": "To date (YYYY-MM-DD)"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Admin moderation queue"
+					},
+					"response": []
+				},
+				{
+					"name": "Review Proposal (APPROVED)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Idempotency-Key",
+								"value": "{{$randomUUID}}",
+								"description": "Idempotency key (required)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"decision\": \"APPROVED\",\n    \"notes\": \"Property looks good, approved for listing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/proposals/:id/review",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"proposals",
+								":id",
+								"review"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{proposal_id}}",
+									"description": "Proposal UUID"
+								}
+							]
+						},
+						"description": "Review proposal (APPROVED/REJECTED)"
+					},
+					"response": []
+				},
+				{
+					"name": "Review Proposal (REJECTED)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Idempotency-Key",
+								"value": "{{$randomUUID}}",
+								"description": "Idempotency key (required)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"decision\": \"REJECTED\",\n    \"notes\": \"Property does not meet quality standards\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/proposals/:id/review",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"proposals",
+								":id",
+								"review"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{proposal_id}}",
+									"description": "Proposal UUID"
+								}
+							]
+						},
+						"description": "Review proposal (APPROVED/REJECTED)"
+					},
+					"response": []
+                },
+                {
+                    "name": "List Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Authorization", "value": "Bearer {{access_token}}" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/users?role=&email=&per_page=20",
+                            "host": ["{{base_url}}"],
+                            "path": ["admin","users"],
+                            "query": [
+                                {"key":"role","value":"","description":"tenant, owner, admin"},
+                                {"key":"email","value":"","description":"Filter by email contains"},
+                                {"key":"from","value":"","description":"From date (YYYY-MM-DD)"},
+                                {"key":"to","value":"","description":"To date (YYYY-MM-DD)"},
+                                {"key":"per_page","value":"20"}
+                            ]
+                        },
+                        "description": "List users (admin)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update User Role",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"role\": \"owner\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/users/:id",
+                            "host": ["{{base_url}}"],
+                            "path": ["admin","users",":id"],
+                            "variable": [
+                                {"key":"id","value":"{{user_id}}","description":"User UUID"}
+                            ]
+                        },
+                        "description": "Update user role"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            { "key": "Authorization", "value": "Bearer {{access_token}}" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/users/:id",
+                            "host": ["{{base_url}}"],
+                            "path": ["admin","users",":id"],
+                            "variable": [
+                                {"key":"id","value":"{{user_id}}","description":"User UUID"}
+                            ]
+                        },
+                        "description": "Delete user"
+                    },
+                    "response": []
+                }
+			]
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "Create Review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 5,\n    \"comment\": \"Excellent property, very clean and well-maintained!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/properties/:id/reviews",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"properties",
+								":id",
+								"reviews"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{property_id}}",
+									"description": "Property UUID"
+								}
+							]
+						},
+						"description": "Create a review (tenant after COMPLETED stay)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications (FCM)",
+			"item": [
+				{
+					"name": "Store FCM Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"fcm_device_token_example_12345\",\n    \"platform\": \"android\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/me/fcm-tokens",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"me",
+								"fcm-tokens"
+							]
+						},
+						"description": "Add device FCM token"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete FCM Token",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/me/fcm-tokens/:token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"me",
+								"fcm-tokens",
+								":token"
+							],
+							"variable": [
+								{
+									"key": "token",
+									"value": "fcm_device_token_example_12345",
+									"description": "FCM token to remove"
+								}
+							]
+						},
+						"description": "Remove device FCM token"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/v1",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "property_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "booking_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "proposal_id",
+			"value": "",
+			"type": "string"
+        },
+        {
+            "key": "user_id",
+            "value": "",
+            "type": "string"
+        }
+	]
+}
+
