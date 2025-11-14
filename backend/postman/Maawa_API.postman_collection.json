@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "maawa-api-v1",
 		"name": "Maawa API v1",
-		"description": "Complete API collection for Maawa property rental marketplace",
+		"description": "Complete API collection for Maawa property rental marketplace. Includes JWT authentication, property management, bookings, proposals, admin proposals management, and user management. Note: Admin notifications are automatically created when proposals are submitted (managed via web admin panel).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "maawa"
 	},
@@ -102,7 +102,7 @@
 								"login"
 							]
 						},
-						"description": "Login and receive access & refresh tokens"
+						"description": "Login and receive access & refresh tokens. Only active users (is_active=true) can login. Inactive users will receive a 401 error."
 					},
 					"response": []
 				},
@@ -150,7 +150,7 @@
 								"refresh"
 							]
 						},
-						"description": "Exchange refresh_token for a new access token (rotating)"
+						"description": "Exchange refresh_token for a new access token (rotating). Only active users can refresh tokens. Refresh tokens are rotated on each use for security."
 					},
 					"response": []
 				},
@@ -293,7 +293,7 @@
 								}
 							]
 						},
-						"description": "Get a property by ID"
+						"description": "Get a property by ID. Response includes location object with latitude, longitude, and map_url (Google Maps link or stored location_url)."
 					},
 					"response": []
 				},
@@ -535,7 +535,7 @@
 			]
 		},
 		{
-			"name": "Moderation (Proposals)",
+			"name": "Proposals",
 			"item": [
 				{
 					"name": "Create Proposal (ADD)",
@@ -567,7 +567,7 @@
 						],
 						"body": {
 							"mode": "raw",
-                            "raw": "{\n    \"type\": \"ADD\",\n    \"payload\": {\n        \"title\": \"Beautiful Apartment in Benghazi\",\n        \"description\": \"Spacious 2-bedroom apartment with sea view\",\n        \"city\": \"Benghazi\",\n        \"type\": \"apartment\",\n        \"price\": 250.00,\n        \"location\": { \"latitude\": 32.115, \"longitude\": 20.067 },\n        \"amenities\": [\"wifi\", \"parking\", \"balcony\"],\n        \"photos\": [\n            {\"url\": \"https://example.com/photo1.jpg\", \"position\": 0},\n            {\"url\": \"https://example.com/photo2.jpg\", \"position\": 1}\n        ]\n    }\n}",
+                            "raw": "{\n    \"type\": \"ADD\",\n    \"payload\": {\n        \"title\": \"Beautiful Apartment in Benghazi\",\n        \"description\": \"Spacious 2-bedroom apartment with sea view\",\n        \"city\": \"Benghazi\",\n        \"type\": \"apartment\",\n        \"price\": 250.00,\n        \"location\": {\n            \"latitude\": 32.115,\n            \"longitude\": 20.067\n        },\n        \"amenities\": [\"wifi\", \"parking\", \"balcony\"],\n        \"photos\": [\n            {\"url\": \"https://example.com/photo1.jpg\", \"position\": 0},\n            {\"url\": \"https://example.com/photo2.jpg\", \"position\": 1}\n        ]\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -583,7 +583,7 @@
 								"proposals"
 							]
 						},
-						"description": "Create owner proposal (ADD)"
+						"description": "Create owner proposal (ADD). Location with latitude and longitude is required. The system stores coordinates and can generate a map URL. Note: Admin panel uses location_url for editing properties."
 					},
 					"response": []
 				},
@@ -603,7 +603,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"EDIT\",\n    \"property_id\": \"{{property_id}}\",\n    \"version\": 1,\n    \"payload\": {\n        \"price\": 275.00,\n        \"description\": \"Updated description with new amenities\"\n    }\n}",
+							"raw": "{\n    \"type\": \"EDIT\",\n    \"property_id\": \"{{property_id}}\",\n    \"version\": 1,\n    \"payload\": {\n        \"price\": 275.00,\n        \"description\": \"Updated description with new amenities\",\n        \"location\": {\n            \"latitude\": 32.120,\n            \"longitude\": 20.070\n        }\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -619,7 +619,7 @@
 								"proposals"
 							]
 						},
-						"description": "Create owner proposal (EDIT)"
+						"description": "Create owner proposal (EDIT). Location with latitude/longitude is optional. Only include fields you want to update. The version must match the current property version to prevent conflicts."
 					},
 					"response": []
 				},
@@ -700,7 +700,7 @@
 			"name": "Admin",
 			"item": [
 				{
-					"name": "Admin Moderation Queue",
+					"name": "Admin Proposals Queue",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -745,7 +745,7 @@
 								}
 							]
 						},
-						"description": "Admin moderation queue"
+						"description": "Admin proposals queue"
 					},
 					"response": []
 				},
@@ -1047,7 +1047,7 @@
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "http://localhost:8000/v1",
+			"value": "http://maawa_project.test/v1",
 			"type": "string"
 		},
 		{

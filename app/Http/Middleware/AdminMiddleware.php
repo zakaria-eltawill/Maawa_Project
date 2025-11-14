@@ -16,12 +16,15 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (!$request->user() || $request->user()->role !== 'admin') {
-            return response()->json([
-                'type' => 'about:blank',
-                'title' => 'Forbidden',
-                'status' => 403,
-                'detail' => 'Admin access required',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'type' => 'about:blank',
+                    'title' => 'Forbidden',
+                    'status' => 403,
+                    'detail' => 'Admin access required',
+                ], 403);
+            }
+            abort(403);
         }
 
         return $next($request);

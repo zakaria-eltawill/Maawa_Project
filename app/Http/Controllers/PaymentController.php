@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Payment\MockPaymentRequest;
+use App\Jobs\SendBookingStatusNotification;
 use App\Models\Booking;
 use Illuminate\Http\JsonResponse;
 
@@ -21,7 +22,32 @@ class PaymentController extends Controller
             ], 410);
         }
 
+        // Simulate payment processing - in real scenario, this would call payment gateway
+        // For now, we'll check if there's a 'fail' parameter to simulate failure
+        $shouldFail = $request->has('fail') && $request->boolean('fail');
+
+        if ($shouldFail) {
+            // Payment failed
+            $booking->update(['status' => 'FAILED']);
+
+            // Dispatch notification job
+            SendBookingStatusNotification::dispatch($booking);
+
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Payment Failed',
+                'status' => 402,
+                'detail' => 'Payment processing failed',
+                'booking_id' => $booking->id,
+                'status' => 'FAILED',
+            ], 402);
+        }
+
+        // Payment successful
         $booking->update(['status' => 'CONFIRMED']);
+
+        // Dispatch notification job
+        SendBookingStatusNotification::dispatch($booking);
 
         return response()->json([
             'booking_id' => $booking->id,

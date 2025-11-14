@@ -38,9 +38,10 @@ class PropertyDetailResource extends JsonResource
             'location' => [
                 'latitude' => $this->location_lat,
                 'longitude' => $this->location_lng,
-                'map_url' => ($this->location_lat !== null && $this->location_lng !== null)
-                    ? 'https://www.google.com/maps?q='.$this->location_lat.','.$this->location_lng
-                    : null,
+                'map_url' => $this->location_url
+                    ?: (($this->location_lat !== null && $this->location_lng !== null)
+                        ? 'https://www.google.com/maps?q='.$this->location_lat.','.$this->location_lng
+                        : null),
             ],
             'reviews_count' => $this->reviews()->count(),
         ];

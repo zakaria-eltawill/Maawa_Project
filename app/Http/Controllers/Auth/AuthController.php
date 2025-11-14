@@ -43,6 +43,17 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
+        $userRecord = User::where('email', $credentials['email'])->first();
+
+        if ($userRecord && !$userRecord->is_active) {
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Forbidden',
+                'status' => 403,
+                'detail' => __('auth.inactive'),
+            ], 403);
+        }
+
         if (!$token = JWTAuth::attempt($credentials)) {
             return response()->json([
                 'type' => 'about:blank',
@@ -53,6 +64,18 @@ class AuthController extends Controller
         }
 
         $user = JWTAuth::user();
+
+        if (!$user->is_active) {
+            JWTAuth::invalidate($token);
+
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Forbidden',
+                'status' => 403,
+                'detail' => __('auth.inactive'),
+            ], 403);
+        }
+
         $refreshToken = $this->createRefreshToken($user);
 
         return response()->json([
@@ -84,6 +107,16 @@ class AuthController extends Controller
 
         // Create new tokens (rotation)
         $user = $refreshToken->user;
+
+        if (!$user->is_active) {
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Forbidden',
+                'status' => 403,
+                'detail' => __('auth.inactive'),
+            ], 403);
+        }
+
         $newAccessToken = JWTAuth::fromUser($user);
         $newRefreshToken = $this->createRefreshToken($user);
 

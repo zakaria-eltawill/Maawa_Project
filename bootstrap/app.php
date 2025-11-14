@@ -4,6 +4,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\App as LaravelApp;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -16,7 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin' => App\Http\Middleware\AdminMiddleware::class,
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ]);
+        
+        // Set locale from session for web routes
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocaleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -38,6 +44,11 @@ return Application::configure(basePath: dirname(__DIR__))
                     'status' => 401,
                     'detail' => 'Unauthenticated',
                 ], 401);
+            }
+            
+            // For admin routes, redirect to admin login
+            if (str_starts_with($path, 'admin/')) {
+                return redirect()->route('admin.login');
             }
         });
         

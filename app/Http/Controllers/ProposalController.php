@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Proposal\StoreProposalRequest;
 use App\Http\Resources\Proposal\ProposalResource;
+use App\Models\AdminNotification;
 use App\Models\Proposal;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,6 +43,8 @@ class ProposalController extends Controller
 
         $proposal = Proposal::create($data);
 
+        $this->notifyAdminsOfProposal($proposal, $user->name);
+
         return response()->json([
             'id' => $proposal->id,
             'status' => 'PENDING',
@@ -63,6 +66,39 @@ class ProposalController extends Controller
         return response()->json([
             'data' => ProposalResource::collection($proposals->items()),
             'next_cursor' => $proposals->hasMorePages() ? $proposals->nextPageUrl() : null,
+        ]);
+    }
+
+    protected function notifyAdminsOfProposal(Proposal $proposal, string $ownerName): void
+    {
+        $typeKey = strtolower($proposal->type);
+        $titleKey = "admin.notification_templates.proposal_{$typeKey}_title";
+        $bodyKey = "admin.notification_templates.proposal_{$typeKey}_body";
+
+        $params = [
+            'owner' => $ownerName,
+        ];
+
+        $propertyId = $proposal->property_id;
+        if ($propertyId) {
+            $params['property'] = $propertyId;
+        }
+
+        AdminNotification::create([
+            'type' => "proposal.{$typeKey}",
+            'title' => __($titleKey, $params, 'en'),
+            'message' => __($bodyKey, $params, 'en'),
+            'entity_type' => Proposal::class,
+            'entity_id' => $proposal->id,
+            'data' => [
+                'title_key' => $titleKey,
+                'body_key' => $bodyKey,
+                'params' => $params,
+                'proposal_id' => $proposal->id,
+                'proposal_type' => $proposal->type,
+                'owner_id' => $proposal->owner_id,
+                'route' => route('admin.proposals.show', $proposal->id),
+            ],
         ]);
     }
 }

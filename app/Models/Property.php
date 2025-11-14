@@ -21,6 +21,7 @@ class Property extends Model
         'price',
         'location_lat',
         'location_lng',
+        'location_url',
         'amenities',
         'photos',
         'unavailable_dates',
@@ -36,6 +37,7 @@ class Property extends Model
             'price' => 'decimal:2',
             'location_lat' => 'float',
             'location_lng' => 'float',
+            'location_url' => 'string',
         ];
     }
 

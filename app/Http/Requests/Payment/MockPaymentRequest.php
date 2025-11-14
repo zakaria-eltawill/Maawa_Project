@@ -15,6 +15,7 @@ class MockPaymentRequest extends FormRequest
     {
         return [
             'booking_id' => ['required', 'uuid', 'exists:bookings,id'],
+            'fail' => ['sometimes', 'boolean'], // Optional parameter to simulate payment failure
         ];
     }
 }
