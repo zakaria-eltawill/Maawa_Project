@@ -37,7 +37,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Osama Ellafi\",\n    \"email\": \"osama@example.com\",\n    \"password\": \"osama123\",\n    \"password_confirmation\": \"osama123\",\n    \"role\": \"owner\",\n    \"phone_number\": \"+218912345678\",\n    \"region\": \"Benghazi\"\n}",
+							"raw": "{\n    \"name\": \"Osama Ellafi\",\n    \"email\": \"osama@example.com\",\n    \"password\": \"osama123\",\n    \"password_confirmation\": \"osama123\",\n    \"role\": \"owner\",\n    \"phone_number\": \"0912345678\",\n    \"region\": \"Benghazi\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -230,7 +230,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ahmed Ali Updated\",\n    \"phone_number\": \"+218999888777\",\n    \"region\": \"Tripoli\"\n}",
+							"raw": "{\n    \"name\": \"Ahmed Ali Updated\",\n    \"phone_number\": \"0999888777\",\n    \"region\": \"Tripoli\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

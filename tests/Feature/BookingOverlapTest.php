@@ -21,7 +21,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -42,7 +42,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -51,7 +51,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -85,7 +85,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -106,7 +106,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -115,7 +115,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -149,7 +149,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -170,7 +170,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -179,7 +179,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -213,7 +213,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -234,7 +234,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -243,7 +243,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -277,7 +277,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -298,7 +298,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -307,7 +307,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -341,7 +341,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -362,7 +362,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -371,7 +371,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -405,7 +405,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -426,7 +426,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -435,7 +435,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -469,7 +469,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -490,7 +490,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -499,7 +499,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -533,7 +533,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -554,7 +554,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -563,7 +563,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -597,7 +597,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -618,7 +618,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -627,7 +627,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -661,7 +661,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -682,7 +682,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -691,7 +691,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -727,7 +727,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -748,7 +748,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -757,7 +757,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 
@@ -792,7 +792,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'owner@example.com',
             'password' => bcrypt('password'),
             'role' => 'owner',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -825,7 +825,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant1@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -834,7 +834,7 @@ class BookingOverlapTest extends TestCase
             'email' => 'tenant2@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218933333333',
+            'phone_number' => '0933333333',
             'region' => 'Misrata',
         ]);
 

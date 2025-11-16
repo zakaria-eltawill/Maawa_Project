@@ -98,4 +98,36 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(FcmToken::class);
     }
+
+    /**
+     * Check if user is the super admin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->email === 'admin@maawa.example' && $this->role === 'admin';
+    }
+
+    /**
+     * Check if current user can manage another user
+     */
+    public function canManage(User $targetUser): bool
+    {
+        // Super admin can manage everyone except themselves
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Regular admins cannot manage super admin
+        if ($targetUser->isSuperAdmin()) {
+            return false;
+        }
+
+        // Regular admins cannot manage other admins
+        if ($this->role === 'admin' && $targetUser->role === 'admin') {
+            return false;
+        }
+
+        // Admins can manage tenants and owners
+        return $this->role === 'admin' && in_array($targetUser->role, ['tenant', 'owner']);
+    }
 }

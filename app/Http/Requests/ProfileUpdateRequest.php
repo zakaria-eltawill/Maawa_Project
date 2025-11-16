@@ -25,7 +25,12 @@ class ProfileUpdateRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'string', 'max:80'],
-            'phone_number' => ['sometimes', 'string', 'max:20', "unique:users,phone_number,{$userId}"],
+            'phone_number' => [
+                'sometimes',
+                'string',
+                'regex:/^09[0-9]{8}$/',
+                "unique:users,phone_number,{$userId}"
+            ],
             'region' => ['sometimes', 'string', 'max:100'],
 
             // Password change rules
@@ -42,6 +47,7 @@ class ProfileUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'phone_number.regex' => 'Phone number must be 10 digits and start with 09 (e.g., 0920206878)',
             'current_password.required_with' => 'Current password is required when changing password.',
             'password.confirmed' => 'Password confirmation does not match.',
         ];

@@ -3,6 +3,15 @@
 @section('title', __('admin.users'))
 
 @section('content')
+<!-- Header with Create Button -->
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">{{ __('admin.users') }}</h1>
+    <a href="{{ route('admin.users.create') }}" 
+       class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200">
+        + Create User
+    </a>
+</div>
+
 <!-- Filters -->
 <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-100 p-8 mb-8">
     <form method="GET" action="{{ route('admin.users.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -64,6 +73,8 @@
                     <th class="px-8 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">{{ __('admin.id') }}</th>
                     <th class="px-8 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">{{ __('admin.name') }}</th>
                     <th class="px-8 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">{{ __('admin.email') }}</th>
+                    <th class="px-8 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Phone Number</th>
+                    <th class="px-8 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Region</th>
                     <th class="px-8 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">{{ __('admin.role') }}</th>
                     <th class="px-8 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">{{ __('admin.status') }}</th>
                     <th class="px-8 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">{{ __('admin.created_at') }}</th>
@@ -85,6 +96,8 @@
                             </div>
                         </td>
                         <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-600">{{ $user->email }}</td>
+                        <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-600">{{ $user->phone_number }}</td>
+                        <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-600">{{ $user->region }}</td>
                         <td class="px-8 py-5 whitespace-nowrap">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                 {{ $user->role === 'admin' ? 'bg-purple-100 text-purple-800' : '' }}
@@ -108,22 +121,35 @@
                                 class="text-purple-600 hover:text-purple-700 font-medium">
                                 {{ __('admin.view') }}
                             </a>
-                            @if($user->id !== auth()->id())
-                                <form action="{{ route('admin.users.toggle', $user->id) }}" method="POST" class="inline">
+                            @if(auth()->user()->canManage($user) && !$user->isSuperAdmin())
+                                <a 
+                                    href="{{ route('admin.users.edit', $user->id) }}"
+                                    class="text-indigo-600 hover:text-indigo-700 font-medium">
+                                    {{ __('admin.edit') }}
+                                </a>
+                            @endif
+                            @if($user->id !== auth()->id() && auth()->user()->canManage($user) && !$user->isSuperAdmin())
+                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline">
                                     @csrf
+                                    @method('DELETE')
                                     <button 
                                         type="submit"
-                                        class="{{ $user->is_active ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700' }} font-medium"
-                                        onclick="return confirm('{{ $user->is_active ? __('admin.confirm_deactivate') : __('admin.confirm_activate') }}')">
-                                        {{ $user->is_active ? __('admin.deactivate') : __('admin.activate') }}
+                                        class="text-red-600 hover:text-red-700 font-medium"
+                                        onclick="return confirm('{{ __('admin.confirm_delete_user') }}')">
+                                        {{ __('admin.delete') }}
                                     </button>
                                 </form>
+                            @endif
+                            @if($user->isSuperAdmin())
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    SUPER ADMIN
+                                </span>
                             @endif
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-8 py-16 text-center">
+                        <td colspan="9" class="px-8 py-16 text-center">
                             <div class="text-gray-500">
                                 <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>

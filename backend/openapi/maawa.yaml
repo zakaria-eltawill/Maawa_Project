@@ -739,8 +739,9 @@ components:
           enum: [tenant, owner]
         phone_number:
           type: string
-          maxLength: 20
-          example: "+218912345678"
+          pattern: '^09[0-9]{8}$'
+          description: 'Libyan mobile number (10 digits starting with 09)'
+          example: "0912345678"
         region:
           type: string
           maxLength: 100
@@ -805,8 +806,9 @@ components:
           example: "Ahmed Ali"
         phone_number:
           type: string
-          maxLength: 20
-          example: "+218912345678"
+          pattern: '^09[0-9]{8}$'
+          description: 'Libyan mobile number (10 digits starting with 09)'
+          example: "0912345678"
         region:
           type: string
           maxLength: 100

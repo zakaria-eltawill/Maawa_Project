@@ -19,7 +19,7 @@ class AuthJwtTest extends TestCase
             'password' => 'osama123',
             'password_confirmation' => 'osama123',
             'role' => 'owner',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Benghazi',
         ]);
 
@@ -31,14 +31,14 @@ class AuthJwtTest extends TestCase
                 'expires_in',
                 'refresh_token',
             ])
-            ->assertJsonPath('user.phone_number', '+218912345678')
+            ->assertJsonPath('user.phone_number', '0912345678')
             ->assertJsonPath('user.region', 'Benghazi')
             ->assertJsonPath('user.email', 'osama@example.com')
             ->assertJsonPath('user.role', 'owner');
 
         $this->assertDatabaseHas('users', [
             'email' => 'osama@example.com',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Benghazi',
             'role' => 'owner',
         ]);
@@ -70,7 +70,7 @@ class AuthJwtTest extends TestCase
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => 'tenant',
-            'phone_number' => '+218923456789',
+            'phone_number' => '0923456789',
             // missing region
         ]);
 
@@ -87,7 +87,7 @@ class AuthJwtTest extends TestCase
             'email' => 'first@example.com',
             'password' => bcrypt('password'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Tripoli',
         ]);
 
@@ -98,7 +98,7 @@ class AuthJwtTest extends TestCase
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => 'owner',
-            'phone_number' => '+218912345678', // duplicate
+            'phone_number' => '0912345678', // duplicate
             'region' => 'Benghazi',
         ]);
 
@@ -115,7 +115,7 @@ class AuthJwtTest extends TestCase
             'email' => 'test@example.com',
             'password' => bcrypt('password123'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Tripoli',
         ]);
 
@@ -133,7 +133,7 @@ class AuthJwtTest extends TestCase
                 'expires_in',
                 'refresh_token',
             ])
-            ->assertJsonPath('user.phone_number', '+218912345678')
+            ->assertJsonPath('user.phone_number', '0912345678')
             ->assertJsonPath('user.region', 'Tripoli');
     }
 
@@ -146,7 +146,7 @@ class AuthJwtTest extends TestCase
             'email' => 'test@example.com',
             'password' => bcrypt('password123'),
             'role' => 'owner',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Benghazi',
         ]);
 
@@ -163,7 +163,7 @@ class AuthJwtTest extends TestCase
             ->getJson('/v1/me');
 
         $response->assertOk()
-            ->assertJsonPath('user.phone_number', '+218912345678')
+            ->assertJsonPath('user.phone_number', '0912345678')
             ->assertJsonPath('user.region', 'Benghazi');
     }
 
@@ -176,7 +176,7 @@ class AuthJwtTest extends TestCase
             'password' => 'password123',
             // missing password_confirmation
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Tripoli',
         ]);
 
@@ -193,7 +193,7 @@ class AuthJwtTest extends TestCase
             'password' => 'ahmed123',
             'password_confirmation' => 'ahmed123',
             'role' => 'tenant',
-            'phone_number' => '+218925555555',
+            'phone_number' => '0925555555',
             'region' => 'Misrata',
         ]);
 

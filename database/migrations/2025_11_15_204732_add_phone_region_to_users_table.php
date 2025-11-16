@@ -23,7 +23,7 @@ return new class extends Migration
             DB::table('users')
                 ->where('id', $user->id)
                 ->update([
-                    'phone_number' => '+218910' . str_pad($index, 6, '0', STR_PAD_LEFT),
+                    'phone_number' => '091' . str_pad($index, 7, '0', STR_PAD_LEFT),
                     'region' => 'Not Specified',
                 ]);
         }

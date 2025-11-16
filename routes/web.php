@@ -65,7 +65,12 @@ Route::prefix('admin')
 
         // Users
         Route::get('/users', [App\Http\Controllers\AdminPanel\UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [App\Http\Controllers\AdminPanel\UserController::class, 'create'])->name('users.create');
+        Route::post('/users', [App\Http\Controllers\AdminPanel\UserController::class, 'store'])->name('users.store');
         Route::get('/users/{id}', [App\Http\Controllers\AdminPanel\UserController::class, 'show'])->name('users.show');
+        Route::get('/users/{id}/edit', [App\Http\Controllers\AdminPanel\UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{id}', [App\Http\Controllers\AdminPanel\UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{id}', [App\Http\Controllers\AdminPanel\UserController::class, 'destroy'])->name('users.destroy');
         Route::post('/users/{id}/toggle-active', [App\Http\Controllers\AdminPanel\UserController::class, 'toggleActive'])->name('users.toggle');
 
         // Audit

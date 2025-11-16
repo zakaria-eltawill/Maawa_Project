@@ -19,7 +19,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Original Region',
         ]);
 
@@ -42,7 +42,7 @@ class ProfileUpdateTest extends TestCase
             ->assertJsonPath('name', 'Updated Name')
             ->assertJsonPath('region', 'Updated Region')
             ->assertJsonPath('email', 'user@example.com')
-            ->assertJsonPath('phone_number', '+218912345678');
+            ->assertJsonPath('phone_number', '0912345678');
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
@@ -59,7 +59,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
             'role' => 'owner',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Benghazi',
         ]);
 
@@ -72,11 +72,11 @@ class ProfileUpdateTest extends TestCase
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
             ->putJson('/v1/me', [
-                'phone_number' => '+218923456789',
+                'phone_number' => '0923456789',
             ]);
 
         $response->assertOk()
-            ->assertJsonPath('phone_number', '+218923456789');
+            ->assertJsonPath('phone_number', '0923456789');
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
@@ -93,7 +93,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user1@example.com',
             'password' => bcrypt('password123'),
             'role' => 'tenant',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -102,7 +102,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user2@example.com',
             'password' => bcrypt('password123'),
             'role' => 'owner',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -117,7 +117,7 @@ class ProfileUpdateTest extends TestCase
         // Try to update with user1's phone number
         $response = $this->withHeader('Authorization', "Bearer {$token}")
             ->putJson('/v1/me', [
-                'phone_number' => '+218911111111', // user1's phone
+                'phone_number' => '0911111111', // user1's phone
             ]);
 
         $response->assertStatus(422)
@@ -126,7 +126,7 @@ class ProfileUpdateTest extends TestCase
         // Verify user2's phone number was not changed
         $this->assertDatabaseHas('users', [
             'id' => $user2->id,
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
         ]);
     }
 
@@ -138,7 +138,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Tripoli',
         ]);
 
@@ -153,12 +153,12 @@ class ProfileUpdateTest extends TestCase
         $response = $this->withHeader('Authorization', "Bearer {$token}")
             ->putJson('/v1/me', [
                 'name' => 'Updated Name',
-                'phone_number' => '+218912345678', // same phone
+                'phone_number' => '0912345678', // same phone
             ]);
 
         $response->assertOk()
             ->assertJsonPath('name', 'Updated Name')
-            ->assertJsonPath('phone_number', '+218912345678');
+            ->assertJsonPath('phone_number', '0912345678');
     }
 
     /** @test */
@@ -169,7 +169,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('oldpassword'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Tripoli',
         ]);
 
@@ -214,7 +214,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Tripoli',
         ]);
 
@@ -244,7 +244,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Tripoli',
         ]);
 
@@ -275,7 +275,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('correctpassword'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Tripoli',
         ]);
 
@@ -306,7 +306,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Tripoli',
         ]);
 
@@ -336,7 +336,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
             'role' => 'owner',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Original Region',
         ]);
 
@@ -366,7 +366,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user1@example.com',
             'password' => bcrypt('password123'),
             'role' => 'tenant',
-            'phone_number' => '+218911111111',
+            'phone_number' => '0911111111',
             'region' => 'Tripoli',
         ]);
 
@@ -375,7 +375,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user2@example.com',
             'password' => bcrypt('password123'),
             'role' => 'owner',
-            'phone_number' => '+218922222222',
+            'phone_number' => '0922222222',
             'region' => 'Benghazi',
         ]);
 
@@ -439,7 +439,7 @@ class ProfileUpdateTest extends TestCase
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
             'role' => 'tenant',
-            'phone_number' => '+218912345678',
+            'phone_number' => '0912345678',
             'region' => 'Original Region',
         ]);
 
