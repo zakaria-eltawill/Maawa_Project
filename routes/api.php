@@ -14,6 +14,7 @@ Route::middleware(['auth:api'])->group(function () {
     // Auth
     Route::post('/auth/logout', [App\Http\Controllers\Auth\AuthController::class, 'logout']);
     Route::get('/me', [App\Http\Controllers\Auth\AuthController::class, 'me']);
+    Route::put('/me', [App\Http\Controllers\Api\MeController::class, 'update']);
     
     // Properties
     Route::get('/properties', [App\Http\Controllers\PropertyController::class, 'index']);

@@ -19,6 +19,28 @@ class BookingResource extends JsonResource
             'total' => (float) $this->total,
             'status' => $this->status,
             'payment_due_at' => $this->payment_due_at?->format('Y-m-d\TH:i:s\Z'),
+            
+            // Property details for displaying title, type, price
+            'property' => $this->whenLoaded('property', function () {
+                return [
+                    'id' => $this->property->id,
+                    'title' => $this->property->title,
+                    'type' => $this->property->type,
+                    'city' => $this->property->city,
+                    'price' => (float) $this->property->price,
+                    'thumbnail' => $this->property->thumbnail,
+                ];
+            }),
+            
+            // Tenant details for displaying name and contact info
+            'tenant' => $this->whenLoaded('tenant', function () {
+                return [
+                    'id' => $this->tenant->id,
+                    'name' => $this->tenant->name,
+                    'email' => $this->tenant->email,
+                    'phone_number' => $this->tenant->phone_number,
+                ];
+            }),
         ];
     }
 }

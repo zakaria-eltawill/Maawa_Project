@@ -12,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip for SQLite as it doesn't support ENUM or MODIFY
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+        
         // For MySQL, we need to modify the enum column
         // Since MySQL doesn't support adding values to enum directly,
         // we'll alter it to include FAILED
@@ -23,6 +28,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Skip for SQLite as it doesn't support ENUM or MODIFY
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+        
         // Remove FAILED from enum
         DB::statement("ALTER TABLE bookings MODIFY COLUMN status ENUM('PENDING', 'ACCEPTED', 'CONFIRMED', 'REJECTED', 'CANCELED', 'EXPIRED', 'COMPLETED') DEFAULT 'PENDING'");
     }

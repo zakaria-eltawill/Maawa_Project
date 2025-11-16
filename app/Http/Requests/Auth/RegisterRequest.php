@@ -17,8 +17,10 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'min:2', 'max:80'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', Rule::in(['tenant', 'owner'])],
+            'phone_number' => ['required', 'string', 'max:20', 'unique:users,phone_number'],
+            'region' => ['required', 'string', 'max:100'],
         ];
     }
 }

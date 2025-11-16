@@ -103,6 +103,22 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/MeResponse' }
         "401": { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [Auth]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileUpdateRequest' }
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResource' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "422": { $ref: '#/components/responses/ValidationError' }
 
   ########################
   # Properties
@@ -586,6 +602,8 @@ components:
         id: { type: string, format: uuid }
         name: { type: string }
         email: { type: string, format: email }
+        phone_number: { type: string }
+        region: { type: string }
         role:
           type: string
           enum: [tenant, owner, admin]
@@ -659,6 +677,22 @@ components:
           type: string
           enum: [PENDING, ACCEPTED, CONFIRMED, REJECTED, CANCELED, EXPIRED, COMPLETED]
         payment_due_at: { type: string, format: date-time, nullable: true }
+        property:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            title: { type: string }
+            type: { type: string, enum: [apartment, villa, chalet] }
+            city: { type: string }
+            price: { type: number, format: float }
+            thumbnail: { type: string }
+        tenant:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+            email: { type: string, format: email }
+            phone_number: { type: string }
 
     Proposal:
       type: object
@@ -694,14 +728,23 @@ components:
     # Auth
     AuthRegisterRequest:
       type: object
-      required: [name, email, password, role]
+      required: [name, email, password, password_confirmation, role, phone_number, region]
       properties:
         name: { type: string, minLength: 2, maxLength: 80 }
         email: { type: string, format: email }
         password: { type: string, minLength: 8 }
+        password_confirmation: { type: string, minLength: 8 }
         role:
           type: string
           enum: [tenant, owner]
+        phone_number:
+          type: string
+          maxLength: 20
+          example: "+218912345678"
+        region:
+          type: string
+          maxLength: 100
+          example: "Benghazi"
 
     AuthRegisterResponse:
       type: object
@@ -752,6 +795,35 @@ components:
         fcm_tokens:
           type: array
           items: { type: string }
+
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 80
+          example: "Ahmed Ali"
+        phone_number:
+          type: string
+          maxLength: 20
+          example: "+218912345678"
+        region:
+          type: string
+          maxLength: 100
+          example: "Tripoli"
+        current_password:
+          type: string
+          description: "Required when changing password"
+          example: "oldpassword123"
+        password:
+          type: string
+          minLength: 8
+          description: "New password"
+          example: "newpassword123"
+        password_confirmation:
+          type: string
+          description: "Must match password"
+          example: "newpassword123"
 
     # Properties
     PropertyListResponse:
@@ -987,6 +1059,14 @@ components:
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            date_range_unavailable:
+              summary: Date range unavailable
+              value:
+                type: "about:blank"
+                title: "Conflict"
+                status: 409
+                detail: "date_range_unavailable"
 
     Gone:
       description: Gone

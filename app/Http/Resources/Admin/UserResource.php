@@ -18,6 +18,8 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'phone_number' => $this->phone_number,
+            'region' => $this->region,
             'role' => $this->role,
             'created_at' => $this->created_at?->toISOString(),
         ];

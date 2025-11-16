@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "maawa-api-v1",
 		"name": "Maawa API v1",
-		"description": "Complete API collection for Maawa property rental marketplace. Includes JWT authentication, property management, bookings, proposals, admin proposals management, and user management. Note: Admin notifications are automatically created when proposals are submitted (managed via web admin panel).",
+		"description": "Complete API collection for Maawa property rental marketplace. Includes JWT authentication, property management, bookings, proposals, admin proposals management, and user management. Note: Admin notifications are automatically created when proposals are submitted (managed via web admin panel). Payment confirmations automatically send push + email notifications to both tenant and owner when booking status changes to CONFIRMED or FAILED.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "maawa"
 	},
@@ -37,7 +37,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"tenant\"\n}",
+							"raw": "{\n    \"name\": \"Osama Ellafi\",\n    \"email\": \"osama@example.com\",\n    \"password\": \"osama123\",\n    \"password_confirmation\": \"osama123\",\n    \"role\": \"owner\",\n    \"phone_number\": \"+218912345678\",\n    \"region\": \"Benghazi\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -54,7 +54,7 @@
 								"register"
 							]
 						},
-						"description": "Register a new user (tenant/owner)"
+						"description": "Register a new user (tenant/owner). Requires phone_number, region, and password_confirmation fields."
 					},
 					"response": []
 				},
@@ -210,7 +210,79 @@
 								"me"
 							]
 						},
-						"description": "Get current user profile"
+						"description": "Get current user profile with phone_number and region"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Ahmed Ali Updated\",\n    \"phone_number\": \"+218999888777\",\n    \"region\": \"Tripoli\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"me"
+							]
+						},
+						"description": "Update current user profile. All fields optional. To change password, include current_password, password, and password_confirmation."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile (Change Password)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"current_password\": \"oldpassword123\",\n    \"password\": \"newpassword456\",\n    \"password_confirmation\": \"newpassword456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"me"
+							]
+						},
+						"description": "Change password. Requires current_password for verification."
 					},
 					"response": []
 				}
@@ -362,7 +434,7 @@
 								{
 									"key": "status",
 									"value": "PENDING",
-									"description": "PENDING, ACCEPTED, CONFIRMED, REJECTED, CANCELED, EXPIRED, COMPLETED"
+									"description": "PENDING, ACCEPTED, CONFIRMED, REJECTED, CANCELED, EXPIRED, COMPLETED, FAILED"
 								},
 								{
 									"key": "from",
@@ -380,7 +452,7 @@
 								}
 							]
 						},
-						"description": "List bookings for current role"
+						"description": "List bookings for current role. Response includes nested property details (title, type, city, price, thumbnail) and tenant details (name, email, phone_number) for display in booking cards."
 					},
 					"response": []
 				},
@@ -435,7 +507,7 @@
 								"bookings"
 							]
 						},
-						"description": "Create booking (PENDING)"
+						"description": "Create booking (PENDING). Returns 409 Conflict with detail: 'date_range_unavailable' if the property is already booked for overlapping dates. Uses strict Airbnb-style overlap prevention."
 					},
 					"response": []
 				},
@@ -511,7 +583,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"booking_id\": \"{{booking_id}}\"\n}",
+							"raw": "{\n    \"booking_id\": \"{{booking_id}}\",\n    \"fail\": false\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -528,7 +600,7 @@
 								"mock"
 							]
 						},
-						"description": "Mock payment to confirm booking"
+						"description": "Mock payment endpoint to finalize a booking. Set \"fail\" to true to simulate a failed payment (booking status=FAILED). When successful, booking status becomes CONFIRMED. Both outcomes trigger push + email notifications to the tenant and property owner."
 					},
 					"response": []
 				}

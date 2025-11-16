@@ -7,12 +7,18 @@ use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Http\Resources\Booking\BookingResource;
 use App\Models\Booking;
 use App\Models\Property;
+use App\Services\Booking\AvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
+    public function __construct(
+        protected AvailabilityService $availabilityService
+    ) {
+    }
     public function index(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -62,26 +68,43 @@ class BookingController extends Controller
     {
         $property = Property::findOrFail($request->property_id);
         
-        // Calculate total (simple: price * nights)
-        $checkIn = Carbon::parse($request->check_in);
-        $checkOut = Carbon::parse($request->check_out);
-        $nights = $checkIn->diffInDays($checkOut);
-        $total = $property->price * $nights;
+        // Check availability first (throws ConflictException if unavailable)
+        $this->availabilityService->ensureAvailable(
+            $request->property_id,
+            $request->check_in,
+            $request->check_out
+        );
+        
+        // Use transaction to ensure atomicity and prevent race conditions
+        $booking = DB::transaction(function () use ($request, $property) {
+            // Double-check availability within transaction for race condition protection
+            $this->availabilityService->ensureAvailable(
+                $request->property_id,
+                $request->check_in,
+                $request->check_out
+            );
+            
+            // Calculate total (simple: price * nights)
+            $checkIn = Carbon::parse($request->check_in);
+            $checkOut = Carbon::parse($request->check_out);
+            $nights = $checkIn->diffInDays($checkOut);
+            $total = $property->price * $nights;
 
-        $booking = Booking::create([
-            'property_id' => $request->property_id,
-            'tenant_id' => auth()->id(),
-            'check_in' => $request->check_in,
-            'check_out' => $request->check_out,
-            'guests' => $request->guests,
-            'total' => $total,
-            'status' => 'PENDING',
-        ]);
+            return Booking::create([
+                'property_id' => $request->property_id,
+                'tenant_id' => auth()->id(),
+                'check_in' => $request->check_in,
+                'check_out' => $request->check_out,
+                'guests' => $request->guests,
+                'total' => $total,
+                'status' => 'PENDING',
+            ]);
+        });
 
         return response()->json([
             'id' => $booking->id,
             'status' => 'PENDING',
-            'total' => (float) $total,
+            'total' => (float) $booking->total,
             'payment_window' => null,
         ], 201);
     }
