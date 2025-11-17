@@ -32,17 +32,36 @@ class BookingController extends Controller
                 'detail' => 'Unauthenticated',
             ], 401);
         }
-        
-        $query = Booking::with(['property', 'tenant']);
 
-        if ($user->role === 'tenant') {
-            $query->where('tenant_id', $user->id);
-        } elseif ($user->role === 'owner') {
-            $query->whereHas('property', function ($q) use ($user) {
-                $q->where('owner_id', $user->id);
-            });
+        // Tenant: only their bookings
+        if ($user->isTenant()) {
+            $query = Booking::where('tenant_id', $user->id)
+                ->with(['property:id,title,type,owner_id', 'tenant:id,name,phone_number']);
+        }
+        // Owner: all bookings on their properties
+        elseif ($user->isOwner()) {
+            $query = Booking::whereHas('property', function ($q) use ($user) {
+                    $q->where('owner_id', $user->id);
+                })
+                ->with([
+                    'property:id,title,type,owner_id',
+                    'tenant:id,name,phone_number'
+                ]);
+        }
+        // Admin: see all bookings with full information
+        elseif ($user->isAdmin()) {
+            $query = Booking::query()
+                ->with([
+                    'property:id,title,type,owner_id,city,price,thumbnail',
+                    'tenant:id,name,email,phone_number,region'
+                ]);
+        }
+        // Unsupported roles
+        else {
+            abort(403, 'Access denied');
         }
 
+        // Apply filters
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -54,6 +73,9 @@ class BookingController extends Controller
         if ($request->filled('to')) {
             $query->where('check_out', '<=', $request->to);
         }
+
+        // Order by newest first
+        $query->orderByDesc('created_at');
 
         $perPage = min($request->get('per_page', 20), 50);
         $bookings = $query->paginate($perPage);

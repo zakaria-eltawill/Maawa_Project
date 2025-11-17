@@ -130,4 +130,28 @@ class User extends Authenticatable implements JWTSubject
         // Admins can manage tenants and owners
         return $this->role === 'admin' && in_array($targetUser->role, ['tenant', 'owner']);
     }
+
+    /**
+     * Check if user is a tenant
+     */
+    public function isTenant(): bool
+    {
+        return $this->role === 'tenant';
+    }
+
+    /**
+     * Check if user is an owner
+     */
+    public function isOwner(): bool
+    {
+        return $this->role === 'owner';
+    }
+
+    /**
+     * Check if user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 }

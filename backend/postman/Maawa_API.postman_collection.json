@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "maawa-api-v1",
 		"name": "Maawa API v1",
-		"description": "Complete API collection for Maawa property rental marketplace. Includes JWT authentication, property management, bookings, proposals, admin proposals management, and user management. Note: Admin notifications are automatically created when proposals are submitted (managed via web admin panel). Payment confirmations automatically send push + email notifications to both tenant and owner when booking status changes to CONFIRMED or FAILED.",
+		"description": "Complete API collection for Maawa property rental marketplace.\n\n## Features:\n- JWT Authentication (access + refresh tokens)\n- User Management (phone_number in Libyan format: 09XXXXXXXX)\n- Property Listings & Management\n- Booking System with Conflict Prevention\n- Owner Decisions (Accept/Reject Bookings)\n- Proposal System\n- Review System\n- Push Notifications (FCM)\n- Role-Based Access Control (Tenant, Owner, Admin)\n\n## Role-Based Access:\n- **Tenant:** Can explore all properties, see own bookings\n- **Owner:** Can see own properties, all bookings on their properties\n- **Admin:** Full access to all properties and bookings with complete information\n\n## Important Notes:\n- Phone numbers must be 10 digits starting with 09 (e.g., 0912345678)\n- Bookings use strict Airbnb-style overlap prevention (returns 409 Conflict)\n- Properties endpoint filters by role (Tenant: all, Owner: own, Admin: all)\n- Bookings endpoint filters by role (Tenant: own, Owner: property bookings, Admin: all)\n- Admin notifications are managed via web admin panel\n- Payment confirmations automatically send push + email notifications\n- Profile updates require current_password when changing password\n- All timestamps use ISO 8601 format",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "maawa"
 	},
@@ -54,7 +54,7 @@
 								"register"
 							]
 						},
-						"description": "Register a new user (tenant/owner). Requires phone_number, region, and password_confirmation fields."
+						"description": "Register a new user (tenant/owner).\n\n**Required Fields:**\n- name (2-80 characters)\n- email (unique)\n- password (min 8 characters)\n- password_confirmation (must match password)\n- role (tenant or owner)\n- phone_number (10 digits, format: 09XXXXXXXX, e.g., 0912345678)\n- region (max 100 characters)\n\n**Returns:**\n- 201 Created: User registered successfully with JWT tokens\n- 422 Unprocessable Entity: Validation errors"
 					},
 					"response": []
 				},
@@ -210,7 +210,7 @@
 								"me"
 							]
 						},
-						"description": "Get current user profile with phone_number and region"
+						"description": "Get current authenticated user profile.\n\n**Returns:**\n- User object with: id, name, email, phone_number, region, role\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				},
@@ -246,7 +246,7 @@
 								"me"
 							]
 						},
-						"description": "Update current user profile. All fields optional. To change password, include current_password, password, and password_confirmation."
+						"description": "Update current authenticated user profile.\n\n**Optional Fields:**\n- name (2-80 characters)\n- phone_number (10 digits, format: 09XXXXXXXX, must be unique)\n- region (max 100 characters)\n\n**Password Change:**\nTo change password, include:\n- current_password (required)\n- password (min 8 characters)\n- password_confirmation (must match password)\n\n**Returns:**\n- 200 OK: Profile updated successfully\n- 422 Unprocessable Entity: Validation errors\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				},
@@ -282,7 +282,7 @@
 								"me"
 							]
 						},
-						"description": "Change password. Requires current_password for verification."
+						"description": "Change user password.\n\n**Required Fields:**\n- current_password (for verification)\n- password (new password, min 8 characters)\n- password_confirmation (must match new password)\n\n**Returns:**\n- 200 OK: Password changed successfully\n- 422 Unprocessable Entity: Validation errors (wrong current password, weak password, etc.)\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				}
@@ -334,7 +334,7 @@
 								}
 							]
 						},
-						"description": "List properties with filters"
+						"description": "List properties with role-based access.\n\n**Role-based filtering:**\n- **Tenant:** Can explore all properties (full browse mode)\n- **Owner:** Can only see their own properties (management mode)\n- **Admin:** Can see all properties with full management access\n\n**Query Parameters:**\n- city: Filter by city\n- type: Filter by property type (apartment, villa, chalet)\n- min_price: Minimum price filter\n- max_price: Maximum price filter\n- per_page: Results per page (max 50)\n\n**Returns:**\n- Paginated list of properties with owner information\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				},
@@ -452,7 +452,7 @@
 								}
 							]
 						},
-						"description": "List bookings for current role. Response includes nested property details (title, type, city, price, thumbnail) and tenant details (name, email, phone_number) for display in booking cards."
+						"description": "List bookings with role-based access.\n\n**Role-based filtering:**\n- **Tenant:** Returns only bookings created by the tenant\n- **Owner:** Returns all bookings made on properties owned by the owner\n- **Admin:** Returns all bookings with complete information (full management access)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status, payment_due_at)\n- Nested property details:\n  - Tenant/Owner: id, title, type, city, price, thumbnail\n  - Admin: id, title, type, owner_id, city, price, thumbnail\n- Nested tenant details:\n  - Tenant/Owner: id, name, phone_number\n  - Admin: id, name, email, phone_number, region\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				},
@@ -507,7 +507,7 @@
 								"bookings"
 							]
 						},
-						"description": "Create booking (PENDING). Returns 409 Conflict with detail: 'date_range_unavailable' if the property is already booked for overlapping dates. Uses strict Airbnb-style overlap prevention."
+						"description": "Create a new booking (status: PENDING).\n\n**Required Fields:**\n- property_id (UUID)\n- check_in (date, must be today or future)\n- check_out (date, must be after check_in)\n- guests (integer, min: 1)\n\n**Conflict Prevention:**\nUses strict Airbnb-style overlap detection. Returns 409 Conflict if dates overlap with existing PENDING, ACCEPTED, or CONFIRMED bookings.\n\n**Returns:**\n- 201 Created: Booking created successfully\n- 409 Conflict: Date range unavailable (detail: 'date_range_unavailable')\n- 422 Unprocessable Entity: Validation errors\n\n**Authentication:** Bearer token required (tenant role)"
 					},
 					"response": []
 				},
@@ -553,7 +553,7 @@
 								}
 							]
 						},
-						"description": "Owner decision (ACCEPT/REJECT)"
+						"description": "Owner accepts or rejects a booking.\n\n**Required Fields:**\n- decision ('ACCEPT' or 'REJECT')\n- reason (optional, string)\n\n**Authorization:**\n- Only property owners can make decisions\n- Only for their own properties\n- Only for PENDING bookings\n\n**Status Changes:**\n- ACCEPT: PENDING → ACCEPTED\n- REJECT: PENDING → REJECTED\n\n**Returns:**\n- 200 OK: Decision recorded successfully\n- 403 Forbidden: Not authorized\n- 422 Unprocessable Entity: Invalid status or decision\n\n**Authentication:** Bearer token required (owner role)"
 					},
 					"response": []
 				}

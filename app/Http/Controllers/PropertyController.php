@@ -13,8 +13,28 @@ class PropertyController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Property::query()->with(['owner', 'reviews']);
+        $user = $request->user();
 
+        // Tenant: full explore mode - see all properties
+        if ($user->isTenant()) {
+            $query = Property::query()->with(['owner:id,name', 'reviews']);
+        }
+        // Owner: only their own properties
+        elseif ($user->isOwner()) {
+            $query = Property::query()
+                ->where('owner_id', $user->id)
+                ->with(['owner:id,name', 'reviews']);
+        }
+        // Admin: see all properties with full management access
+        elseif ($user->isAdmin()) {
+            $query = Property::query()->with(['owner:id,name', 'reviews']);
+        }
+        // Unsupported roles
+        else {
+            abort(403, 'Access denied');
+        }
+
+        // Apply filters
         if ($request->filled('city')) {
             $query->where('city', $request->city);
         }

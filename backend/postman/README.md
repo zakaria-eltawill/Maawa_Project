@@ -1,142 +1,280 @@
-# Maawa API Postman Collection
+# Maawa API - Postman Collection
 
-This directory contains Postman collections and environments for testing the Maawa API.
+Complete API testing collection for the Maawa property rental marketplace backend.
 
-## Files
+## 📦 Files
 
 - `Maawa_API.postman_collection.json` - Complete API collection with all endpoints
-- `Maawa_API.postman_environment.json` - Environment variables for local development
+- `Maawa_API.postman_environment.json` - Environment variables (base_url, tokens, IDs)
 
-## Setup
+## 🚀 Quick Start
 
-### 1. Import Collection
+### 1. Import into Postman
 
 1. Open Postman
 2. Click **Import** button
-3. Select `Maawa_API.postman_collection.json`
-4. The collection will be imported with all endpoints
+3. Select both files:
+   - `Maawa_API.postman_collection.json`
+   - `Maawa_API.postman_environment.json`
+4. Select the **"Maawa API - Local"** environment from the dropdown
 
-### 2. Import Environment
+### 2. Update Environment Variables
 
-1. In Postman, click **Environments** (left sidebar)
-2. Click **Import**
-3. Select `Maawa_API.postman_environment.json`
-4. Select the imported environment from the dropdown (top right)
+Click the **Environment quick look** (eye icon) and edit:
 
-### 3. Configure Base URL
+```
+base_url: http://maawa_project.test/v1
+```
 
-The default base URL is set to `http://localhost:8000/v1`. If your Laravel server runs on a different port or domain, update the `base_url` variable in the environment.
+Or for production:
+```
+base_url: http://your-server-ip/v1
+```
 
-## Usage
+### 3. Authentication Flow
 
-### Quick Start
+The collection uses **JWT authentication**. Follow this flow:
 
-1. **Register or Login**: Start with the "Auth > Register" or "Auth > Login" request
-   - These will automatically save `access_token` and `refresh_token` to environment variables
-   
-2. **Use Protected Endpoints**: All other endpoints will automatically use the stored `access_token`
+#### **Step 1: Register or Login**
 
-3. **Test Flow**:
-   - Register/Login → Get tokens
-   - Create a proposal (if owner) or browse properties
-   - Create a booking (if tenant)
-   - Accept/reject booking (if owner)
-   - Make payment
-   - Complete stay and leave review
+Run either:
+- **Register** (creates new user + auto-saves tokens)
+- **Login** (gets tokens for existing user)
 
-## Collection Structure
+Both automatically save `access_token` and `refresh_token` to environment variables.
 
-### Auth
-- Register - Create new user account
-- Login - Authenticate and get tokens
-- Refresh Token - Get new access token
-- Logout - Revoke tokens
-- Get Current User - Get authenticated user profile
+#### **Step 2: Use Authenticated Endpoints**
 
-### Properties
-- List Properties - Browse with filters
-- Get Property by ID - View property details
-- List Property Reviews - View reviews for a property
+All requests in folders Auth, Properties, Bookings, etc. automatically use:
+```
+Authorization: Bearer {{access_token}}
+```
 
-### Bookings
-- List Bookings - View bookings (tenant or owner view)
-- Create Booking - Request a booking (requires X-Idempotency-Key)
-- Owner Decision - Accept or reject booking
+#### **Step 3: Refresh Token (when expired)**
 
-### Payments
-- Mock Payment - Confirm a booking payment (requires X-Idempotency-Key)
+Run **Refresh Token** endpoint when access token expires (usually after 1 hour).
 
-### Moderation (Proposals)
-- Create Proposal (ADD) - Submit new property for approval
-- Create Proposal (EDIT) - Request property changes
-- Create Proposal (DELETE) - Request property deletion
-- List Owner Proposals - View your proposals
+---
 
-### Admin
-- Admin Moderation Queue - View pending proposals (admin only)
-- Review Proposal (APPROVED) - Approve a proposal (admin only, requires X-Idempotency-Key)
-- Review Proposal (REJECTED) - Reject a proposal (admin only, requires X-Idempotency-Key)
+## 📂 Collection Structure
 
-### Reviews
-- Create Review - Leave a review after completed stay
+### 🔐 Auth
+- **Register** - Create new user (tenant/owner)
+- **Login** - Authenticate existing user
+- **Logout** - Revoke current refresh token
+- **Refresh Token** - Get new access token
+- **Get Current User** - Get profile (with phone_number, region)
+- **Update Profile** - Update name, phone, region
+- **Update Profile (Change Password)** - Change password with current_password verification
 
-### Notifications (FCM)
-- Store FCM Token - Register device for push notifications
-- Delete FCM Token - Remove device token
+### 🏠 Properties
+- **List Properties** - Browse properties (role-based access)
+  - **Tenant:** See all properties (explore mode)
+  - **Owner:** See only their own properties
+  - **Admin:** See all properties with full access
+- **Get Property by ID** - View single property details
+- **Create Property** - Owner creates new listing
+- **Update Property** - Owner edits listing
+- **Delete Property** - Owner removes listing
+- **Upload Property Photos** - Add property images
 
-## Features
+### 📅 Bookings
+- **List Bookings** - View bookings (role-based access)
+  - **Tenant:** See only their own bookings
+  - **Owner:** See all bookings on their properties
+  - **Admin:** See all bookings with complete information
+- **Create Booking** - Tenant books property (with conflict prevention)
+- **Owner Decision (Accept/Reject)** - Owner responds to booking
 
-### Auto-Save Tokens
-The collection includes test scripts that automatically save tokens:
-- `access_token` - Saved after Register/Login/Refresh
-- `refresh_token` - Saved after Register/Login/Refresh
-- `booking_id` - Saved after creating a booking
-- `proposal_id` - Saved after creating a proposal
+### 💰 Payments
+- **Register FCM Token** - For push notifications
+- **Confirm Payment** - Submit payment proof
 
-### Idempotency
-Requests that require idempotency keys (`X-Idempotency-Key` header) automatically generate a random UUID. You can also set a fixed value if needed for testing.
+### 📝 Proposals
+- **Submit Proposal** - Owner submits property for approval
+- **My Proposals** - View own proposals
 
-### Environment Variables
-The collection uses these variables:
-- `base_url` - API base URL (default: http://localhost:8000/v1)
-- `access_token` - JWT access token (auto-set)
-- `refresh_token` - Refresh token (auto-set)
-- `property_id` - Property UUID (set manually or from responses)
-- `booking_id` - Booking UUID (auto-set)
-- `proposal_id` - Proposal UUID (auto-set)
+### ⭐ Reviews
+- **Create Review** - Tenant reviews property after stay
+- **Property Reviews** - View reviews for a property
 
-## Testing Workflows
+---
 
-### Tenant Workflow
-1. Register/Login as tenant
-2. List properties
-3. View property details
-4. Create booking
-5. Wait for owner acceptance
-6. Make payment (when accepted)
-7. Complete stay
-8. Leave review
+## 🔑 Important Notes
 
-### Owner Workflow
-1. Register/Login as owner
-2. Create proposal (ADD) for new property
-3. Wait for admin approval
-4. List properties
-5. View bookings
-6. Accept/reject booking requests
-7. Receive payment
+### Role-Based Access Control
+The API enforces role-based filtering on properties and bookings:
 
-### Admin Workflow
+**Properties (`/v1/properties`):**
+- **Tenant:** Can explore all properties (full browse mode)
+- **Owner:** Can only see their own properties (management mode)
+- **Admin:** Can see all properties with full management access
+
+**Bookings (`/v1/bookings`):**
+- **Tenant:** Returns only bookings created by the tenant
+- **Owner:** Returns all bookings made on properties owned by the owner
+- **Admin:** Returns all bookings with complete information (email, region, full property details)
+
+### Phone Number Format
+Phone numbers **must** be in Libyan format:
+- **Format:** `09XXXXXXXX` (10 digits starting with `09`)
+- **Examples:** `0912345678`, `0920206878`
+- **Invalid:** `+218912345678`, `912345678`, `0812345678`
+
+### Date Overlap Prevention
+The booking system uses **Airbnb-style conflict detection**:
+- Overlapping dates return `409 Conflict`
+- Only `PENDING`, `ACCEPTED`, `CONFIRMED` bookings block availability
+- `REJECTED`, `CANCELED`, `EXPIRED` bookings do not block dates
+
+### Booking Status Flow
+```
+PENDING → ACCEPTED → CONFIRMED → COMPLETED
+        ↘ REJECTED
+```
+
+- **PENDING:** Initial status after tenant creates booking
+- **ACCEPTED:** Owner approves the booking
+- **CONFIRMED:** Payment verified (tenant paid)
+- **REJECTED:** Owner rejects the booking
+- **COMPLETED:** Booking finished (after checkout)
+
+### Error Responses
+
+#### 401 Unauthorized
+```json
+{
+  "type": "about:blank",
+  "title": "Unauthorized",
+  "status": 401,
+  "detail": "unauthenticated"
+}
+```
+
+#### 409 Conflict (Date Unavailable)
+```json
+{
+  "type": "about:blank",
+  "title": "Conflict",
+  "status": 409,
+  "detail": "date_range_unavailable"
+}
+```
+
+#### 422 Validation Error
+```json
+{
+  "message": "The phone number field format is invalid.",
+  "errors": {
+    "phone_number": [
+      "Phone number must be 10 digits and start with 09 (e.g., 0920206878)"
+    ]
+  }
+}
+```
+
+---
+
+## 🧪 Testing Workflow
+
+### 1. User Registration & Authentication
+```
+1. Register → auto-saves access_token
+2. Get Current User → verify profile
+3. Update Profile → test profile updates
+```
+
+### 2. Property Management (Owner)
+```
+1. Login as owner
+2. Create Property → save property_id
+3. Upload Property Photos
+4. List Properties → verify only YOUR properties appear
+   (Other owners' properties are hidden)
+```
+
+### 2b. Property Browsing (Tenant)
+```
+1. Login as tenant
+2. List Properties → see ALL properties (explore mode)
+3. Get Property by ID → view details
+```
+
+### 2c. Property Management (Admin)
+```
 1. Login as admin
-2. View moderation queue
-3. Review proposals (APPROVED/REJECTED)
-4. Monitor system
+2. List Properties → see ALL properties from all owners
+3. Full management access to all properties
+```
 
-## Notes
+### 3. Booking Flow (Tenant)
+```
+1. Login as tenant
+2. List Properties → find property_id
+3. Create Booking → save booking_id
+   - Try overlapping dates → expect 409
+4. List Bookings → verify it appears
+```
 
-- All timestamps use ISO 8601 format
-- UUIDs are required for resource IDs
-- Status enums are case-sensitive (PENDING, ACCEPTED, etc.)
-- Idempotency keys prevent duplicate operations
-- Refresh tokens rotate on each refresh request
+### 4. Owner Decision Flow
+```
+1. Login as owner
+2. List Bookings → see PENDING bookings on YOUR properties
+3. Owner Decision (ACCEPT or REJECT)
+4. List Bookings → verify status changed
+```
 
+### 4b. Admin Booking Management
+```
+1. Login as admin
+2. List Bookings → see ALL bookings with complete information
+   - Full tenant details (email, region, phone)
+   - Full property details (city, price, thumbnail)
+3. Can view all bookings across all properties
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### "Unauthenticated" Error
+- Run **Login** or **Register** again
+- Check if `access_token` is saved in environment
+- Try **Refresh Token** if token expired
+
+### "409 Conflict" on Booking
+- Dates overlap with existing booking
+- Try different dates
+- This is **expected behavior** for conflict prevention
+
+### "422 Validation Error"
+- Check phone number format: must start with `09`
+- Verify all required fields are provided
+- Check password confirmation matches
+
+### "403 Forbidden" on Owner Decision
+- Only property owner can accept/reject
+- Check if logged-in user owns the property
+- Verify booking status is `PENDING`
+
+---
+
+## 📖 API Documentation
+
+For full API documentation, see:
+- **OpenAPI Spec:** `backend/openapi/maawa.yaml`
+- **Import to Swagger UI or Postman** for interactive docs
+
+---
+
+## 🆘 Support
+
+If you encounter issues:
+1. Check environment variables are set
+2. Verify base_url points to correct server
+3. Ensure migrations are run on server
+4. Check server logs for detailed errors
+
+---
+
+**Happy Testing! 🚀**

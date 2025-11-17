@@ -126,7 +126,12 @@ paths:
   /properties:
     get:
       tags: [Properties]
-      summary: List properties with filters
+      summary: Get properties (Tenant: explore all | Owner: only their properties | Admin: all properties)
+      description: |
+        **Role-based access:**
+        - **Tenant:** Can explore all properties (full browse mode)
+        - **Owner:** Can only see their own properties (management mode)
+        - **Admin:** Can see all properties with full management access
       parameters:
         - $ref: '#/components/parameters/City'
         - $ref: '#/components/parameters/Type'
@@ -180,7 +185,17 @@ paths:
   /bookings:
     get:
       tags: [Bookings]
-      summary: List bookings for current role
+      summary: Get bookings (Tenant: own bookings | Owner: bookings on owned properties | Admin: all bookings)
+      description: |
+        **Role-based access:**
+        - **Tenant:** Returns only bookings created by the tenant
+        - **Owner:** Returns all bookings made on properties owned by the owner
+        - **Admin:** Returns all bookings with complete information (full management access)
+        
+        **Response includes:**
+        - Booking details (id, check_in, check_out, guests, total, status)
+        - Nested property details (id, title, type, city, price, thumbnail)
+        - Nested tenant details (id, name, email, phone_number, region)
       parameters:
         - $ref: '#/components/parameters/BookingStatus'
         - $ref: '#/components/parameters/FromDate'
