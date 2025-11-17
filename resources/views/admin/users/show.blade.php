@@ -16,7 +16,7 @@
     @if(auth()->user()->canManage($user) && !$user->isSuperAdmin())
         <a 
             href="{{ route('admin.users.edit', $user->id) }}"
-            class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-2 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200">
+            class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200">
             Edit User
         </a>
     @elseif($user->isSuperAdmin())
