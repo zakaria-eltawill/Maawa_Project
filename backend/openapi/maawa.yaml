@@ -187,6 +187,12 @@ paths:
       tags: [Bookings]
       summary: Get bookings (Tenant: own bookings | Owner: bookings on owned properties | Admin: all bookings)
       description: |
+        **General endpoint with role-based access.**
+        
+        **Note:** For role-specific endpoints, use:
+        - `/v1/owner/bookings` - Owner-specific endpoint (only owners)
+        - `/v1/tenant/bookings` - Tenant-specific endpoint (only tenants)
+        
         **Role-based access:**
         - **Tenant:** Returns only bookings created by the tenant
         - **Owner:** Returns all bookings made on properties owned by the owner
@@ -228,6 +234,168 @@ paths:
         "401": { $ref: '#/components/responses/Unauthorized' }
         "409": { $ref: '#/components/responses/Conflict' }
         "422": { $ref: '#/components/responses/ValidationError' }
+
+  /owner/bookings:
+    get:
+      tags: [Bookings]
+      summary: Get bookings for owner's properties
+      description: |
+        **Owner-specific endpoint** - Returns all bookings made on properties owned by the authenticated owner.
+        
+        **Access:** Only owners can access this endpoint (403 Forbidden for tenants/admins)
+        
+        **Response includes:**
+        - Booking details (id, check_in, check_out, guests, total, status)
+        - Nested property details (id, title, type, owner_id)
+        - Nested tenant details (id, name, phone_number)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BookingStatus'
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Owner's property bookings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingListResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+
+  /owner/bookings/{status}:
+    get:
+      tags: [Bookings]
+      summary: Get owner bookings by status
+      description: |
+        **Owner-specific endpoint** - Returns bookings with a specific status on properties owned by the authenticated owner.
+        
+        **Access:** Only owners can access this endpoint (403 Forbidden for tenants/admins)
+        
+        **Valid Status Values:**
+        - `pending` - Bookings awaiting owner decision
+        - `accepted` - Bookings accepted by owner
+        - `confirmed` - Bookings with confirmed payment
+        - `rejected` - Bookings rejected by owner
+        - `canceled` - Canceled bookings
+        - `expired` - Expired bookings
+        - `completed` - Completed bookings
+        - `failed` - Failed payment bookings
+        
+        **Response includes:**
+        - Booking details (id, check_in, check_out, guests, total, status)
+        - Nested property details (id, title, type, owner_id)
+        - Nested tenant details (id, name, phone_number)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [pending, accepted, confirmed, rejected, canceled, expired, completed, failed]
+          description: Booking status (case-insensitive)
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Owner's property bookings by status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingListResponse' }
+        "400":
+          description: Invalid status value
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+
+  /tenant/bookings:
+    get:
+      tags: [Bookings]
+      summary: Get bookings for tenant
+      description: |
+        **Tenant-specific endpoint** - Returns all bookings created by the authenticated tenant.
+        
+        **Access:** Only tenants can access this endpoint (403 Forbidden for owners/admins)
+        
+        **Response includes:**
+        - Booking details (id, check_in, check_out, guests, total, status)
+        - Nested property details (id, title, type, owner_id)
+        - Nested tenant details (id, name, phone_number)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BookingStatus'
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Tenant's bookings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingListResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+
+  /tenant/bookings/{status}:
+    get:
+      tags: [Bookings]
+      summary: Get tenant bookings by status
+      description: |
+        **Tenant-specific endpoint** - Returns bookings with a specific status created by the authenticated tenant.
+        
+        **Access:** Only tenants can access this endpoint (403 Forbidden for owners/admins)
+        
+        **Valid Status Values:**
+        - `pending` - Bookings awaiting owner decision
+        - `accepted` - Bookings accepted by owner
+        - `confirmed` - Bookings with confirmed payment
+        - `rejected` - Bookings rejected by owner
+        - `canceled` - Canceled bookings
+        - `expired` - Expired bookings
+        - `completed` - Completed bookings
+        - `failed` - Failed payment bookings
+        
+        **Response includes:**
+        - Booking details (id, check_in, check_out, guests, total, status)
+        - Nested property details (id, title, type, owner_id)
+        - Nested tenant details (id, name, phone_number)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [pending, accepted, confirmed, rejected, canceled, expired, completed, failed]
+          description: Booking status (case-insensitive)
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Tenant's bookings by status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingListResponse' }
+        "400":
+          description: Invalid status value
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
 
   /owner/bookings/{id}/decision:
     post:

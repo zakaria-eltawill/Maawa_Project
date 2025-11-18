@@ -452,7 +452,7 @@
 								}
 							]
 						},
-						"description": "List bookings with role-based access.\n\n**Role-based filtering:**\n- **Tenant:** Returns only bookings created by the tenant\n- **Owner:** Returns all bookings made on properties owned by the owner\n- **Admin:** Returns all bookings with complete information (full management access)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status, payment_due_at)\n- Nested property details:\n  - Tenant/Owner: id, title, type, city, price, thumbnail\n  - Admin: id, title, type, owner_id, city, price, thumbnail\n- Nested tenant details:\n  - Tenant/Owner: id, name, phone_number\n  - Admin: id, name, email, phone_number, region\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required"
+						"description": "List bookings with role-based access (general endpoint).\n\n**Note:** For role-specific endpoints, use:\n- `/v1/owner/bookings` - Owner-specific endpoint\n- `/v1/tenant/bookings` - Tenant-specific endpoint\n\n**Role-based filtering:**\n- **Tenant:** Returns only bookings created by the tenant\n- **Owner:** Returns all bookings made on properties owned by the owner\n- **Admin:** Returns all bookings with complete information (full management access)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status, payment_due_at)\n- Nested property details:\n  - Tenant/Owner: id, title, type, city, price, thumbnail\n  - Admin: id, title, type, owner_id, city, price, thumbnail\n- Nested tenant details:\n  - Tenant/Owner: id, name, phone_number\n  - Admin: id, name, email, phone_number, region\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				},
@@ -508,6 +508,437 @@
 							]
 						},
 						"description": "Create a new booking (status: PENDING).\n\n**Required Fields:**\n- property_id (UUID)\n- check_in (date, must be today or future)\n- check_out (date, must be after check_in)\n- guests (integer, min: 1)\n\n**Conflict Prevention:**\nUses strict Airbnb-style overlap detection. Returns 409 Conflict if dates overlap with existing PENDING, ACCEPTED, or CONFIRMED bookings.\n\n**Returns:**\n- 201 Created: Booking created successfully\n- 409 Conflict: Date range unavailable (detail: 'date_range_unavailable')\n- 422 Unprocessable Entity: Validation errors\n\n**Authentication:** Bearer token required (tenant role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/bookings?status=PENDING&per_page=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owner",
+								"bookings"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "PENDING",
+									"description": "Filter by booking status"
+								},
+								{
+									"key": "from",
+									"value": "",
+									"description": "Filter bookings from date (YYYY-MM-DD)"
+								},
+								{
+									"key": "to",
+									"value": "",
+									"description": "Filter bookings to date (YYYY-MM-DD)"
+								},
+								{
+									"key": "per_page",
+									"value": "20",
+									"description": "Results per page (max 50)"
+								}
+							]
+						},
+						"description": "Get all bookings for owner's properties.\n\n**Owner-specific endpoint** - Returns all bookings made on properties owned by the authenticated owner.\n\n**Access:** Only owners can access this endpoint (403 Forbidden for tenants/admins)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status)\n- Nested property details (id, title, type, owner_id)\n- Nested tenant details (id, name, phone_number)\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required (owner role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenant/bookings?status=PENDING&per_page=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tenant",
+								"bookings"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "PENDING",
+									"description": "Filter by booking status"
+								},
+								{
+									"key": "from",
+									"value": "",
+									"description": "Filter bookings from date (YYYY-MM-DD)"
+								},
+								{
+									"key": "to",
+									"value": "",
+									"description": "Filter bookings to date (YYYY-MM-DD)"
+								},
+								{
+									"key": "per_page",
+									"value": "20",
+									"description": "Results per page (max 50)"
+								}
+							]
+						},
+						"description": "Get all bookings for tenant.\n\n**Tenant-specific endpoint** - Returns all bookings created by the authenticated tenant.\n\n**Access:** Only tenants can access this endpoint (403 Forbidden for owners/admins)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status)\n- Nested property details (id, title, type, owner_id)\n- Nested tenant details (id, name, phone_number)\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required (tenant role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Bookings - PENDING",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/bookings/pending?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "bookings", "pending"],
+							"query": [
+								{"key": "from", "value": "", "description": "Filter from date (YYYY-MM-DD)"},
+								{"key": "to", "value": "", "description": "Filter to date (YYYY-MM-DD)"},
+								{"key": "per_page", "value": "20", "description": "Results per page (max 50)"}
+							]
+						},
+						"description": "Get all PENDING bookings for owner's properties.\n\n**Owner-specific endpoint** - Returns bookings with PENDING status on properties owned by the authenticated owner.\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n\n**Authentication:** Bearer token required (owner role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Bookings - ACCEPTED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/bookings/accepted?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "bookings", "accepted"],
+							"query": [
+								{"key": "from", "value": "", "description": "Filter from date (YYYY-MM-DD)"},
+								{"key": "to", "value": "", "description": "Filter to date (YYYY-MM-DD)"},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all ACCEPTED bookings for owner's properties. Only owners can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Bookings - CONFIRMED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/bookings/confirmed?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "bookings", "confirmed"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all CONFIRMED bookings for owner's properties. Only owners can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Bookings - REJECTED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/bookings/rejected?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "bookings", "rejected"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all REJECTED bookings for owner's properties. Only owners can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Bookings - CANCELED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/bookings/canceled?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "bookings", "canceled"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all CANCELED bookings for owner's properties. Only owners can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Bookings - EXPIRED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/bookings/expired?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "bookings", "expired"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all EXPIRED bookings for owner's properties. Only owners can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Bookings - COMPLETED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/bookings/completed?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "bookings", "completed"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all COMPLETED bookings for owner's properties. Only owners can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Bookings - FAILED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/bookings/failed?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "bookings", "failed"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all FAILED bookings for owner's properties. Only owners can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Bookings - PENDING",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenant/bookings/pending?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["tenant", "bookings", "pending"],
+							"query": [
+								{"key": "from", "value": "", "description": "Filter from date (YYYY-MM-DD)"},
+								{"key": "to", "value": "", "description": "Filter to date (YYYY-MM-DD)"},
+								{"key": "per_page", "value": "20", "description": "Results per page (max 50)"}
+							]
+						},
+						"description": "Get all PENDING bookings for tenant.\n\n**Tenant-specific endpoint** - Returns bookings with PENDING status created by the authenticated tenant.\n\n**Access:** Only tenants can access (403 Forbidden for owners/admins)\n\n**Authentication:** Bearer token required (tenant role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Bookings - ACCEPTED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenant/bookings/accepted?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["tenant", "bookings", "accepted"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all ACCEPTED bookings for tenant. Only tenants can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Bookings - CONFIRMED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenant/bookings/confirmed?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["tenant", "bookings", "confirmed"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all CONFIRMED bookings for tenant. Only tenants can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Bookings - REJECTED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenant/bookings/rejected?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["tenant", "bookings", "rejected"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all REJECTED bookings for tenant. Only tenants can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Bookings - CANCELED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenant/bookings/canceled?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["tenant", "bookings", "canceled"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all CANCELED bookings for tenant. Only tenants can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Bookings - EXPIRED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenant/bookings/expired?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["tenant", "bookings", "expired"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all EXPIRED bookings for tenant. Only tenants can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Bookings - COMPLETED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenant/bookings/completed?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["tenant", "bookings", "completed"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all COMPLETED bookings for tenant. Only tenants can access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Bookings - FAILED",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/tenant/bookings/failed?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["tenant", "bookings", "failed"],
+							"query": [
+								{"key": "from", "value": ""},
+								{"key": "to", "value": ""},
+								{"key": "per_page", "value": "20"}
+							]
+						},
+						"description": "Get all FAILED bookings for tenant. Only tenants can access."
 					},
 					"response": []
 				},

@@ -26,8 +26,16 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/bookings', [App\Http\Controllers\BookingController::class, 'store'])
         ->middleware([App\Http\Middleware\IdempotencyMiddleware::class]);
     
-    // Owner bookings
+    // Owner-specific bookings endpoints
+    Route::get('/owner/bookings', [App\Http\Controllers\BookingController::class, 'ownerBookings']);
+    Route::get('/owner/bookings/{status}', [App\Http\Controllers\BookingController::class, 'ownerBookingsByStatus'])
+        ->where('status', 'pending|accepted|confirmed|rejected|canceled|expired|completed|failed');
     Route::post('/owner/bookings/{id}/decision', [App\Http\Controllers\BookingController::class, 'ownerDecision']);
+    
+    // Tenant-specific bookings endpoints
+    Route::get('/tenant/bookings', [App\Http\Controllers\BookingController::class, 'tenantBookings']);
+    Route::get('/tenant/bookings/{status}', [App\Http\Controllers\BookingController::class, 'tenantBookingsByStatus'])
+        ->where('status', 'pending|accepted|confirmed|rejected|canceled|expired|completed|failed');
     
     // Payments
     Route::post('/payments/mock', [App\Http\Controllers\PaymentController::class, 'mock'])

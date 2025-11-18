@@ -79,10 +79,34 @@ Run **Refresh Token** endpoint when access token expires (usually after 1 hour).
 - **Upload Property Photos** - Add property images
 
 ### 📅 Bookings
-- **List Bookings** - View bookings (role-based access)
+- **List Bookings** - View bookings (role-based access, general endpoint)
   - **Tenant:** See only their own bookings
   - **Owner:** See all bookings on their properties
   - **Admin:** See all bookings with complete information
+- **Get Owner Bookings** - Owner-specific endpoint (`/v1/owner/bookings`)
+  - Returns all bookings on properties owned by the authenticated owner
+  - Only owners can access (403 for tenants/admins)
+- **Get Owner Bookings by Status** - Status-specific endpoints for owners
+  - `/v1/owner/bookings/pending` - PENDING bookings
+  - `/v1/owner/bookings/accepted` - ACCEPTED bookings
+  - `/v1/owner/bookings/confirmed` - CONFIRMED bookings
+  - `/v1/owner/bookings/rejected` - REJECTED bookings
+  - `/v1/owner/bookings/canceled` - CANCELED bookings
+  - `/v1/owner/bookings/expired` - EXPIRED bookings
+  - `/v1/owner/bookings/completed` - COMPLETED bookings
+  - `/v1/owner/bookings/failed` - FAILED bookings
+- **Get Tenant Bookings** - Tenant-specific endpoint (`/v1/tenant/bookings`)
+  - Returns all bookings created by the authenticated tenant
+  - Only tenants can access (403 for owners/admins)
+- **Get Tenant Bookings by Status** - Status-specific endpoints for tenants
+  - `/v1/tenant/bookings/pending` - PENDING bookings
+  - `/v1/tenant/bookings/accepted` - ACCEPTED bookings
+  - `/v1/tenant/bookings/confirmed` - CONFIRMED bookings
+  - `/v1/tenant/bookings/rejected` - REJECTED bookings
+  - `/v1/tenant/bookings/canceled` - CANCELED bookings
+  - `/v1/tenant/bookings/expired` - EXPIRED bookings
+  - `/v1/tenant/bookings/completed` - COMPLETED bookings
+  - `/v1/tenant/bookings/failed` - FAILED bookings
 - **Create Booking** - Tenant books property (with conflict prevention)
 - **Owner Decision (Accept/Reject)** - Owner responds to booking
 
@@ -110,10 +134,25 @@ The API enforces role-based filtering on properties and bookings:
 - **Owner:** Can only see their own properties (management mode)
 - **Admin:** Can see all properties with full management access
 
-**Bookings (`/v1/bookings`):**
-- **Tenant:** Returns only bookings created by the tenant
-- **Owner:** Returns all bookings made on properties owned by the owner
-- **Admin:** Returns all bookings with complete information (email, region, full property details)
+**Bookings:**
+- **`/v1/bookings`** (General endpoint - role-based):
+  - **Tenant:** Returns only bookings created by the tenant
+  - **Owner:** Returns all bookings made on properties owned by the owner
+  - **Admin:** Returns all bookings with complete information (email, region, full property details)
+- **`/v1/owner/bookings`** (Owner-specific - all bookings):
+  - Returns all bookings on properties owned by the authenticated owner
+  - Only owners can access (403 Forbidden for tenants/admins)
+- **`/v1/owner/bookings/{status}`** (Owner-specific - by status):
+  - Returns bookings with specific status on owner's properties
+  - Status values: `pending`, `accepted`, `confirmed`, `rejected`, `canceled`, `expired`, `completed`, `failed`
+  - Only owners can access (403 Forbidden for tenants/admins)
+- **`/v1/tenant/bookings`** (Tenant-specific - all bookings):
+  - Returns all bookings created by the authenticated tenant
+  - Only tenants can access (403 Forbidden for owners/admins)
+- **`/v1/tenant/bookings/{status}`** (Tenant-specific - by status):
+  - Returns bookings with specific status created by the tenant
+  - Status values: `pending`, `accepted`, `confirmed`, `rejected`, `canceled`, `expired`, `completed`, `failed`
+  - Only tenants can access (403 Forbidden for owners/admins)
 
 ### Phone Number Format
 Phone numbers **must** be in Libyan format:

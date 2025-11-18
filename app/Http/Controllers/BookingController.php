@@ -131,6 +131,214 @@ class BookingController extends Controller
         ], 201);
     }
 
+    public function ownerBookings(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        
+        // Only owners can access this endpoint
+        if (!$user->isOwner()) {
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Forbidden',
+                'status' => 403,
+                'detail' => 'Only owners can access this endpoint',
+            ], 403);
+        }
+
+        // Get all bookings on owner's properties
+        $query = Booking::whereHas('property', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })
+            ->with([
+                'property:id,title,type,owner_id',
+                'tenant:id,name,phone_number'
+            ]);
+
+        // Apply filters
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('from')) {
+            $query->where('check_in', '>=', $request->from);
+        }
+
+        if ($request->filled('to')) {
+            $query->where('check_out', '<=', $request->to);
+        }
+
+        // Order by newest first
+        $query->orderByDesc('created_at');
+
+        $perPage = min($request->get('per_page', 20), 50);
+        $bookings = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => BookingResource::collection($bookings->items()),
+            'next_cursor' => $bookings->hasMorePages() ? $bookings->nextPageUrl() : null,
+        ]);
+    }
+
+    public function tenantBookings(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        
+        // Only tenants can access this endpoint
+        if (!$user->isTenant()) {
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Forbidden',
+                'status' => 403,
+                'detail' => 'Only tenants can access this endpoint',
+            ], 403);
+        }
+
+        // Get all bookings created by the tenant
+        $query = Booking::where('tenant_id', $user->id)
+            ->with(['property:id,title,type,owner_id', 'tenant:id,name,phone_number']);
+
+        // Apply filters
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('from')) {
+            $query->where('check_in', '>=', $request->from);
+        }
+
+        if ($request->filled('to')) {
+            $query->where('check_out', '<=', $request->to);
+        }
+
+        // Order by newest first
+        $query->orderByDesc('created_at');
+
+        $perPage = min($request->get('per_page', 20), 50);
+        $bookings = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => BookingResource::collection($bookings->items()),
+            'next_cursor' => $bookings->hasMorePages() ? $bookings->nextPageUrl() : null,
+        ]);
+    }
+
+    /**
+     * Get owner bookings by status
+     */
+    public function ownerBookingsByStatus(string $status, Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        
+        // Only owners can access this endpoint
+        if (!$user->isOwner()) {
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Forbidden',
+                'status' => 403,
+                'detail' => 'Only owners can access this endpoint',
+            ], 403);
+        }
+
+        // Validate status
+        $validStatuses = ['PENDING', 'ACCEPTED', 'CONFIRMED', 'REJECTED', 'CANCELED', 'EXPIRED', 'COMPLETED', 'FAILED'];
+        $status = strtoupper($status);
+        
+        if (!in_array($status, $validStatuses)) {
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Bad Request',
+                'status' => 400,
+                'detail' => 'Invalid booking status',
+            ], 400);
+        }
+
+        // Get bookings on owner's properties with specific status
+        $query = Booking::whereHas('property', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })
+            ->where('status', $status)
+            ->with([
+                'property:id,title,type,owner_id',
+                'tenant:id,name,phone_number'
+            ]);
+
+        // Apply date filters
+        if ($request->filled('from')) {
+            $query->where('check_in', '>=', $request->from);
+        }
+
+        if ($request->filled('to')) {
+            $query->where('check_out', '<=', $request->to);
+        }
+
+        // Order by newest first
+        $query->orderByDesc('created_at');
+
+        $perPage = min($request->get('per_page', 20), 50);
+        $bookings = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => BookingResource::collection($bookings->items()),
+            'next_cursor' => $bookings->hasMorePages() ? $bookings->nextPageUrl() : null,
+        ]);
+    }
+
+    /**
+     * Get tenant bookings by status
+     */
+    public function tenantBookingsByStatus(string $status, Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        
+        // Only tenants can access this endpoint
+        if (!$user->isTenant()) {
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Forbidden',
+                'status' => 403,
+                'detail' => 'Only tenants can access this endpoint',
+            ], 403);
+        }
+
+        // Validate status
+        $validStatuses = ['PENDING', 'ACCEPTED', 'CONFIRMED', 'REJECTED', 'CANCELED', 'EXPIRED', 'COMPLETED', 'FAILED'];
+        $status = strtoupper($status);
+        
+        if (!in_array($status, $validStatuses)) {
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Bad Request',
+                'status' => 400,
+                'detail' => 'Invalid booking status',
+            ], 400);
+        }
+
+        // Get tenant's bookings with specific status
+        $query = Booking::where('tenant_id', $user->id)
+            ->where('status', $status)
+            ->with(['property:id,title,type,owner_id', 'tenant:id,name,phone_number']);
+
+        // Apply date filters
+        if ($request->filled('from')) {
+            $query->where('check_in', '>=', $request->from);
+        }
+
+        if ($request->filled('to')) {
+            $query->where('check_out', '<=', $request->to);
+        }
+
+        // Order by newest first
+        $query->orderByDesc('created_at');
+
+        $perPage = min($request->get('per_page', 20), 50);
+        $bookings = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => BookingResource::collection($bookings->items()),
+            'next_cursor' => $bookings->hasMorePages() ? $bookings->nextPageUrl() : null,
+        ]);
+    }
+
     public function ownerDecision(string $id, OwnerDecisionRequest $request): JsonResponse
     {
         $booking = Booking::with('property')->findOrFail($id);
