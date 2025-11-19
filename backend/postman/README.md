@@ -114,6 +114,12 @@ Run **Refresh Token** endpoint when access token expires (usually after 1 hour).
 - **Register FCM Token** - For push notifications
 - **Confirm Payment** - Submit payment proof
 
+### 📁 Files
+- **Upload Image** - Upload image files (JPEG, PNG, WebP)
+  - Maximum file size: 10MB
+  - Returns public URL for use in proposals, properties, etc.
+  - Supports folder organization (proposals, properties, profiles)
+
 ### 📝 Proposals
 - **Submit Proposal** - Owner submits property for approval
 - **My Proposals** - View own proposals

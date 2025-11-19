@@ -1545,6 +1545,47 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Files",
+			"item": [
+				{
+					"name": "Upload Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Image file to upload (JPEG, PNG, or WebP, max 10MB)"
+								},
+								{
+									"key": "folder",
+									"value": "proposals",
+									"type": "text",
+									"description": "Folder name to organize uploads (optional, e.g., 'proposals', 'properties', 'profiles')"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/upload",
+							"host": ["{{base_url}}"],
+							"path": ["upload"]
+						},
+						"description": "Upload an image file and receive a public URL.\n\n**File Requirements:**\n- Allowed types: JPEG, JPG, PNG, WebP\n- Maximum size: 10MB\n- Must be a valid image file\n\n**Request Format:**\n- Content-Type: multipart/form-data\n- file (required): The image file\n- folder (optional): Folder name to organize uploads (e.g., 'proposals', 'properties', 'profiles')\n\n**Response Format:**\n```json\n{\n  \"url\": \"https://api.maawa.example/storage/proposals/1234567890_abc123_my-image.jpg\",\n  \"id\": \"1234567890_abc123_my-image\",\n  \"filename\": \"my-image.jpg\"\n}\n```\n\n**Status Codes:**\n- 201 Created: Image uploaded successfully\n- 400 Bad Request: Invalid file format or missing file\n- 401 Unauthorized: Missing or invalid authentication token\n- 413 Payload Too Large: File size exceeds 10MB\n- 422 Unprocessable Entity: Validation errors\n\n**Use Cases:**\n- Property photos for proposals\n- Property listing images\n- User profile pictures\n\n**Authentication:** Bearer token required"
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [

@@ -647,6 +647,96 @@ paths:
         "204": { description: Removed }
         "401": { $ref: '#/components/responses/Unauthorized' }
 
+  ########################
+  # File Upload
+  ########################
+  /upload:
+    post:
+      tags: [Files]
+      summary: Upload an image file
+      description: |
+        Upload an image file (JPEG, PNG, WebP) and receive a public URL.
+        
+        **Use Cases:**
+        - Property photos for proposals
+        - Property listing images
+        - User profile pictures
+        
+        **File Requirements:**
+        - Allowed types: JPEG, JPG, PNG, WebP
+        - Maximum size: 10MB
+        - Must be a valid image file
+        
+        **Storage:**
+        - Files are stored in organized folders based on the `folder` parameter
+        - Files are publicly accessible via the returned URL
+        - Unique filenames are generated to prevent conflicts
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to upload (JPEG, PNG, or WebP)
+                folder:
+                  type: string
+                  maxLength: 50
+                  description: Folder name to organize uploads (e.g., "proposals", "properties", "profiles")
+                  example: "proposals"
+      responses:
+        "201":
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FileUploadResponse' }
+              examples:
+                simple:
+                  summary: Simple response
+                  value:
+                    url: "https://api.maawa.example/storage/proposals/1234567890_abc123_my-image.jpg"
+                extended:
+                  summary: Extended response
+                  value:
+                    url: "https://api.maawa.example/storage/proposals/1234567890_abc123_my-image.jpg"
+                    id: "1234567890_abc123_my-image"
+                    filename: "my-image.jpg"
+        "400":
+          description: Bad Request - Invalid file format or missing file
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValidationError' }
+              examples:
+                invalid_format:
+                  summary: Invalid file format
+                  value:
+                    message: "Invalid file format. Only JPEG, PNG, and WebP images are allowed."
+                    errors:
+                      file: ["The file must be an image."]
+                missing_file:
+                  summary: Missing file
+                  value:
+                    message: "The given data was invalid."
+                    errors:
+                      file: ["The file field is required."]
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "413":
+          description: Payload Too Large - File size exceeds maximum allowed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValidationError' }
+              example:
+                message: "File size exceeds maximum allowed size of 10MB."
+                errors:
+                  file: ["The file may not be greater than 10240 kilobytes."]
+        "422": { $ref: '#/components/responses/ValidationError' }
+
 components:
 
   ########################
@@ -1209,6 +1299,24 @@ components:
       properties:
         id: { type: string, format: uuid }
         token: { type: string }
+
+    FileUploadResponse:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Public URL to access the uploaded image
+          example: "https://api.maawa.example/storage/proposals/1234567890_abc123_my-image.jpg"
+        id:
+          type: string
+          description: Unique identifier for the uploaded file (filename without extension)
+          example: "1234567890_abc123_my-image"
+        filename:
+          type: string
+          description: Original filename of the uploaded file
+          example: "my-image.jpg"
 
   ########################
   # Standard Responses

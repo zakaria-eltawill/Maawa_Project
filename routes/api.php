@@ -63,5 +63,8 @@ Route::middleware(['auth:api'])->group(function () {
     // FCM Tokens
     Route::post('/me/fcm-tokens', [App\Http\Controllers\FcmTokenController::class, 'store']);
     Route::delete('/me/fcm-tokens/{token}', [App\Http\Controllers\FcmTokenController::class, 'destroy']);
+    
+    // File Upload
+    Route::post('/upload', [App\Http\Controllers\FileUploadController::class, 'upload']);
 });
 
