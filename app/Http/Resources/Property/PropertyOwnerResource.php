@@ -5,8 +5,12 @@ namespace App\Http\Resources\Property;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PropertyDetailResource extends JsonResource
+class PropertyOwnerResource extends JsonResource
 {
+    /**
+     * Transform the resource into an array for owner view.
+     * This includes all property details plus owner-specific information.
+     */
     public function toArray(Request $request): array
     {
         $photos = $this->photos ?? [];
@@ -40,21 +44,13 @@ class PropertyDetailResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
+            'description' => $this->description,
             'city' => $this->city,
             'type' => $this->type,
             'price' => (float) $this->price,
             'thumbnail' => $thumbnail,
-            'avg_rating' => $this->reviews()->avg('rating'),
-            'description' => $this->description,
-            'amenities' => $this->amenities ?? [],
             'photos' => $normalizedPhotos,
-            'owner' => [
-                'id' => $this->owner->id,
-                'name' => $this->owner->name,
-            ],
-            'availability' => [
-                'unavailable_dates' => $this->unavailable_dates ?? [],
-            ],
+            'amenities' => $this->amenities ?? [],
             'location' => [
                 'latitude' => $this->location_lat,
                 'longitude' => $this->location_lng,
@@ -63,7 +59,21 @@ class PropertyDetailResource extends JsonResource
                         ? 'https://www.google.com/maps?q='.$this->location_lat.','.$this->location_lng
                         : null),
             ],
-            'reviews_count' => $this->reviews()->count(),
+            'statistics' => [
+                'bookings_count' => $this->bookings()->count(),
+                'reviews_count' => $this->reviews()->count(),
+                'avg_rating' => $this->reviews()->avg('rating'),
+                'total_revenue' => (float) $this->bookings()
+                    ->where('status', 'CONFIRMED')
+                    ->sum('total'),
+            ],
+            'availability' => [
+                'unavailable_dates' => $this->unavailable_dates ?? [],
+            ],
+            'version' => $this->version ?? 1,
+            'created_at' => $this->created_at?->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString(),
         ];
     }
 }
+

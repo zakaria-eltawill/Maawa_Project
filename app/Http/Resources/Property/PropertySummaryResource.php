@@ -10,7 +10,17 @@ class PropertySummaryResource extends JsonResource
     public function toArray(Request $request): array
     {
         $photos = $this->photos ?? [];
-        $thumbnail = !empty($photos) ? $photos[0]['url'] ?? null : null;
+        
+        // Handle photos as both string URLs and array format
+        $thumbnail = null;
+        if (!empty($photos)) {
+            $firstPhoto = $photos[0];
+            if (is_array($firstPhoto)) {
+                $thumbnail = $firstPhoto['url'] ?? null;
+            } else {
+                $thumbnail = $firstPhoto; // It's already a string URL
+            }
+        }
 
         return [
             'id' => $this->id,

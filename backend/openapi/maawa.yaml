@@ -153,6 +153,10 @@ paths:
     get:
       tags: [Properties]
       summary: Get a property by ID
+      description: |
+        Returns property details. Response format depends on user role:
+        - **Owner viewing their own property:** Returns PropertyOwnerResponse with owner info and statistics
+        - **Tenant/Admin:** Returns PropertyDetailResponse with basic owner info
       parameters:
         - $ref: '#/components/parameters/Id'
       responses:
@@ -161,7 +165,133 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/PropertyDetailResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
         "404": { $ref: '#/components/responses/NotFound' }
+
+  /owner/properties:
+    get:
+      tags: [Properties]
+      summary: Get owner's properties
+      description: |
+        **Owner-specific endpoint** - Returns all properties owned by the authenticated owner.
+        
+        **Access:** Only owners can access this endpoint (403 Forbidden for tenants/admins)
+        
+        **Response includes:**
+        - Full property details with all photos (handles both string URLs and array format)
+        - Statistics (bookings_count, reviews_count, avg_rating, total_revenue)
+        - Version number for conflict prevention
+        - Note: Owner information is not included (owner already knows their own info)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/City'
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/MinPrice'
+        - $ref: '#/components/parameters/MaxPrice'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        "200":
+          description: Owner's properties
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/PropertyOwnerResponse' }
+                  next_cursor:
+                    type: string
+                    nullable: true
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+
+  /owner/properties/{id}:
+    get:
+      tags: [Properties]
+      summary: Get owner's property by ID
+      description: |
+        **Owner-specific endpoint** - Returns detailed information about a specific property owned by the authenticated owner.
+        
+        **Access:** Only owners can access this endpoint (403 Forbidden for tenants/admins)
+        **Authorization:** Owner can only access their own properties (403 if property belongs to another owner)
+        
+        **Response includes:**
+        - Full property details with all photos (handles both string URLs and array format)
+        - Statistics (bookings_count, reviews_count, avg_rating, total_revenue)
+        - Version number for conflict prevention
+        - Note: Owner information is not included (owner already knows their own info)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        "200":
+          description: Owner's property details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PropertyOwnerResponse' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "404": { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Properties]
+      summary: Create edit proposal for owner's property
+      description: |
+        **Owner-specific endpoint** - Creates an EDIT proposal for a property owned by the authenticated owner.
+        
+        **Workflow:**
+        1. Owner submits property changes
+        2. System creates a PENDING proposal
+        3. Admin reviews and approves/rejects
+        4. If approved, property is updated with new information
+        5. Property appears in owner's properties list with updated data
+        
+        **Access:** Only owners can access this endpoint (403 Forbidden for tenants/admins)
+        **Authorization:** Owner can only create proposals for their own properties (403 if property belongs to another owner)
+        
+        **Proposal Rules:**
+        - All fields are optional (partial updates supported)
+        - Version must match current property version (for conflict prevention)
+        - Photos must be valid URLs (from /v1/upload endpoint)
+        - Location can be updated with latitude/longitude or map_url
+        - Proposal status starts as PENDING, requires admin approval
+        
+        **Response:** Returns proposal ID and status (PENDING)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PropertyUpdateRequest' }
+      responses:
+        "201":
+          description: Edit proposal created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: Proposal ID
+                  status:
+                    type: string
+                    enum: [PENDING]
+                    description: Proposal status (always PENDING when created)
+                  message:
+                    type: string
+                    example: "Edit proposal created. Waiting for admin approval."
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "404": { $ref: '#/components/responses/NotFound' }
+        "422": { $ref: '#/components/responses/ValidationError' }
 
   /properties/{id}/reviews:
     get:
@@ -1111,6 +1241,93 @@ components:
 
     PropertyDetailResponse:
       $ref: '#/components/schemas/PropertyDetail'
+
+    PropertyOwnerResponse:
+      allOf:
+        - $ref: '#/components/schemas/PropertyDetail'
+        - type: object
+          properties:
+            statistics:
+              type: object
+              properties:
+                bookings_count: { type: integer }
+                reviews_count: { type: integer }
+                avg_rating: { type: number, format: float, nullable: true }
+                total_revenue: { type: number, format: float }
+            version: { type: integer }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+
+    PropertyUpdateRequest:
+      type: object
+      description: |
+        Update property request. All fields are optional (partial updates supported).
+        Version is automatically incremented by the backend.
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          example: "Beautiful Villa in Tripoli"
+        description:
+          type: string
+          maxLength: 5000
+          example: "A stunning villa with modern amenities..."
+        city:
+          type: string
+          maxLength: 80
+          example: "Tripoli"
+        type:
+          type: string
+          enum: [apartment, villa, chalet]
+          example: "villa"
+        price:
+          type: number
+          format: float
+          minimum: 0
+          example: 800.00
+        location:
+          type: object
+          properties:
+            latitude:
+              type: number
+              format: float
+              minimum: -90
+              maximum: 90
+              example: 32.0679175
+            longitude:
+              type: number
+              format: float
+              minimum: -180
+              maximum: 180
+              example: 20.0850292
+            map_url:
+              type: string
+              format: uri
+              maxLength: 500
+              nullable: true
+              example: "https://www.google.com/maps?q=32.0679175,20.0850292"
+        amenities:
+          type: array
+          items:
+            type: string
+            maxLength: 50
+          example: ["wifi", "parking", "pool", "tv"]
+        photos:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            format: uri
+            maxLength: 500
+          description: Array of photo URLs (from /v1/upload endpoint)
+          example: ["http://3.68.75.38/storage/properties/image1.jpg"]
+        unavailable_dates:
+          type: array
+          items:
+            type: string
+            format: date
+          description: Array of dates when property is unavailable
+          example: ["2025-12-25", "2025-12-26"]
 
     # Bookings
     BookingCreateRequest:

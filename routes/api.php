@@ -21,6 +21,11 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/properties/{id}', [App\Http\Controllers\PropertyController::class, 'show']);
     Route::get('/properties/{id}/reviews', [App\Http\Controllers\ReviewController::class, 'index']);
     
+    // Owner-specific properties endpoints
+    Route::get('/owner/properties', [App\Http\Controllers\PropertyController::class, 'ownerProperties']);
+    Route::get('/owner/properties/{id}', [App\Http\Controllers\PropertyController::class, 'ownerProperty']);
+    Route::put('/owner/properties/{id}', [App\Http\Controllers\PropertyController::class, 'createEditProposal']);
+    
     // Bookings
     Route::get('/bookings', [App\Http\Controllers\BookingController::class, 'index']);
     Route::post('/bookings', [App\Http\Controllers\BookingController::class, 'store'])

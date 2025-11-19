@@ -406,6 +406,129 @@
 						"description": "List reviews for a property"
 					},
 					"response": []
+				},
+				{
+					"name": "Get Owner Properties",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/properties?per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "properties"],
+							"query": [
+								{"key": "city", "value": "", "description": "Filter by city"},
+								{"key": "type", "value": "", "description": "Filter by type (apartment, villa, chalet)"},
+								{"key": "min_price", "value": "", "description": "Minimum price"},
+								{"key": "max_price", "value": "", "description": "Maximum price"},
+								{"key": "per_page", "value": "20", "description": "Results per page (max 50)"}
+							]
+						},
+						"description": "Get all properties owned by the authenticated owner.\n\n**Owner-specific endpoint** - Returns all properties owned by the authenticated owner with full details.\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n\n**Response includes:**
+- Full property details with all photos (handles both string URLs and array format)
+- Statistics (bookings_count, reviews_count, avg_rating, total_revenue)
+- Version number for conflict prevention
+- Note: Owner information is not included (owner already knows their own info)\n\n**Use this endpoint for:**
+- Displaying owner's property list with images
+- Showing property cards with complete information
+- Accessing owner-specific data for editing\n\n**Authentication:** Bearer token required (owner role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner Property by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/properties/:id",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "properties", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Property UUID"
+								}
+							]
+						},
+						"description": "Get detailed information about a specific property owned by the authenticated owner.\n\n**Owner-specific endpoint** - Returns detailed property information with owner-specific data.\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n**Authorization:** Owner can only access their own properties (403 if property belongs to another owner)\n\n**Response includes:**
+- Full property details with all photos (handles both string URLs and array format)
+- Statistics (bookings_count, reviews_count, avg_rating, total_revenue)
+- Version number for conflict prevention
+- Note: Owner information is not included (owner already knows their own info)\n\n**Use this endpoint for:**
+- Property detail page for owners
+- Edit property form (pre-fill with current data)
+- Viewing owner-specific statistics\n\n**Authentication:** Bearer token required (owner role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Edit Proposal for Property",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Property Title\",\n    \"description\": \"Updated description\",\n    \"price\": 900.00,\n    \"photos\": [\n        \"http://3.68.75.38/storage/properties/image1.jpg\",\n        \"http://3.68.75.38/storage/properties/image2.jpg\"\n    ],\n    \"amenities\": [\"wifi\", \"parking\", \"pool\"],\n    \"location\": {\n        \"latitude\": 32.0679175,\n        \"longitude\": 20.0850292\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/owner/properties/:id",
+							"host": ["{{base_url}}"],
+							"path": ["owner", "properties", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Property UUID"
+								}
+							]
+						},
+						"description": "Create an EDIT proposal for a property owned by the authenticated owner.\n\n**Owner-specific endpoint** - Creates a PENDING proposal that requires admin approval.\n\n**Workflow:**
+1. Owner submits property changes via this endpoint
+2. System creates a PENDING proposal
+3. Admin reviews and approves/rejects in admin panel
+4. If approved, property is updated with new information
+5. Property appears in owner's properties list with updated data\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n**Authorization:** Owner can only create proposals for their own properties (403 if property belongs to another owner)\n\n**Proposal Rules:**
+- All fields are optional (partial updates supported)
+- Only include fields you want to update
+- Version is automatically set from current property version
+- Photos must be valid URLs (from /v1/upload endpoint)\n\n**Request Body (all fields optional):**
+- title: Property title (max 200 chars)
+- description: Property description (max 5000 chars)
+- city: City name (max 80 chars)
+- type: Property type (apartment, villa, chalet)
+- price: Price per night (min 0)
+- location: Location object with latitude, longitude, map_url
+- amenities: Array of amenity strings (max 50 chars each)
+- photos: Array of photo URLs (max 20 photos, from /v1/upload)
+- unavailable_dates: Array of date strings\n\n**Response:**\n```json\n{\n  \"id\": \"proposal-uuid\",\n  \"status\": \"PENDING\",\n  \"message\": \"Edit proposal created. Waiting for admin approval.\"\n}\n```\n\n**Note:** Property is NOT updated immediately. Changes are pending admin approval.\n\n**Authentication:** Bearer token required (owner role)"
+					},
+					"response": []
 				}
 			]
 		},
