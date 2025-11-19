@@ -34,11 +34,19 @@ class FileUploadController extends Controller
         // Store file in public disk
         $path = $file->storeAs($folder, $filename, 'public');
 
-        // Get public URL
-        $url = Storage::disk('public')->url($path);
-
-        // Ensure full URL (absolute)
-        $url = url($url);
+        // Get public URL using the request's scheme and host
+        // This ensures we use the actual server domain, not localhost
+        $scheme = $request->getScheme(); // http or https
+        $host = $request->getHost(); // e.g., 3.68.75.38 or your-domain.com
+        
+        // Handle port if present (for development environments)
+        $port = $request->getPort();
+        $portString = ($port && !in_array($port, [80, 443])) ? ':' . $port : '';
+        
+        $storagePath = '/storage/' . $path;
+        
+        // Build absolute URL
+        $url = $scheme . '://' . $host . $portString . $storagePath;
 
         return response()->json([
             'url' => $url,
