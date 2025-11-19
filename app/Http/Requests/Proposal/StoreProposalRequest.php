@@ -31,6 +31,12 @@ class StoreProposalRequest extends FormRequest
             $rules['payload.location'] = ['required', 'array'];
             $rules['payload.location.latitude'] = ['required', 'numeric', 'between:-90,90'];
             $rules['payload.location.longitude'] = ['required', 'numeric', 'between:-180,180'];
+            // Photos validation - optional array of URLs
+            $rules['payload.photos'] = ['sometimes', 'array', 'max:20'];
+            $rules['payload.photos.*'] = ['required', 'string', 'url', 'max:500'];
+            // Amenities validation - optional array of strings
+            $rules['payload.amenities'] = ['sometimes', 'array'];
+            $rules['payload.amenities.*'] = ['string', 'max:50'];
         } elseif ($type === 'EDIT') {
             $rules['property_id'] = ['required', 'uuid', 'exists:properties,id'];
             $rules['version'] = ['required', 'integer', 'min:1'];
@@ -39,6 +45,12 @@ class StoreProposalRequest extends FormRequest
             $rules['payload.location'] = ['sometimes', 'array'];
             $rules['payload.location.latitude'] = ['sometimes', 'numeric', 'between:-90,90'];
             $rules['payload.location.longitude'] = ['sometimes', 'numeric', 'between:-180,180'];
+            // Photos validation - optional array of URLs
+            $rules['payload.photos'] = ['sometimes', 'array', 'max:20'];
+            $rules['payload.photos.*'] = ['required', 'string', 'url', 'max:500'];
+            // Amenities validation - optional array of strings
+            $rules['payload.amenities'] = ['sometimes', 'array'];
+            $rules['payload.amenities.*'] = ['string', 'max:50'];
         } elseif ($type === 'DELETE') {
             $rules['property_id'] = ['required', 'uuid', 'exists:properties,id'];
             $rules['reason'] = ['required', 'string', 'min:3'];
