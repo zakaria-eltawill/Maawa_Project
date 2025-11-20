@@ -1143,7 +1143,9 @@ components:
           enum: [apartment, villa, chalet]
         price: { type: number, format: float }
         thumbnail: { type: string }
-        avg_rating: { type: number, format: float, nullable: true }
+        avg_rating: { type: number, format: float, description: "Average rating (0.0 if no reviews)" }
+        average_rating: { type: number, format: float, description: "Alias for avg_rating for frontend compatibility (0.0 if no reviews)" }
+        reviews_count: { type: integer, description: "Total number of reviews" }
 
     PropertyDetail:
       allOf:
@@ -1182,7 +1184,9 @@ components:
                 latitude: { type: number, format: float, example: 32.115 }
                 longitude: { type: number, format: float, example: 20.067 }
                 map_url: { type: string, example: "https://www.google.com/maps?q=32.115,20.067" }
-            reviews_count: { type: integer }
+            avg_rating: { type: number, format: float, description: "Average rating (0.0 if no reviews)" }
+            average_rating: { type: number, format: float, description: "Alias for avg_rating for frontend compatibility (0.0 if no reviews)" }
+            reviews_count: { type: integer, description: "Total number of reviews" }
 
     Booking:
       type: object

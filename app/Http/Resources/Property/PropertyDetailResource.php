@@ -37,6 +37,13 @@ class PropertyDetailResource extends JsonResource
             }
         }, $photos, array_keys($photos));
 
+        // Calculate rating - ensure it's always a float (0.0 if no reviews)
+        $avgRating = $this->reviews()->avg('rating');
+        $avgRating = $avgRating !== null ? (float) $avgRating : 0.0;
+        
+        // Get reviews count
+        $reviewsCount = $this->reviews()->count();
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -44,7 +51,8 @@ class PropertyDetailResource extends JsonResource
             'type' => $this->type,
             'price' => (float) $this->price,
             'thumbnail' => $thumbnail,
-            'avg_rating' => $this->reviews()->avg('rating'),
+            'avg_rating' => $avgRating,
+            'average_rating' => $avgRating, // Alias for frontend compatibility
             'description' => $this->description,
             'amenities' => $this->amenities ?? [],
             'photos' => $normalizedPhotos,
@@ -68,7 +76,7 @@ class PropertyDetailResource extends JsonResource
                         ? 'https://www.google.com/maps?q='.$this->location_lat.','.$this->location_lng
                         : null),
             ],
-            'reviews_count' => $this->reviews()->count(),
+            'reviews_count' => $reviewsCount,
         ];
     }
 }

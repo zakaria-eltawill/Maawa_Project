@@ -22,6 +22,13 @@ class PropertySummaryResource extends JsonResource
             }
         }
 
+        // Calculate rating - ensure it's always a float (0.0 if no reviews)
+        $avgRating = $this->reviews()->avg('rating');
+        $avgRating = $avgRating !== null ? (float) $avgRating : 0.0;
+        
+        // Get reviews count
+        $reviewsCount = $this->reviews()->count();
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -29,7 +36,9 @@ class PropertySummaryResource extends JsonResource
             'type' => $this->type,
             'price' => (float) $this->price,
             'thumbnail' => $thumbnail,
-            'avg_rating' => $this->reviews()->avg('rating'),
+            'avg_rating' => $avgRating,
+            'average_rating' => $avgRating, // Alias for frontend compatibility
+            'reviews_count' => $reviewsCount,
         ];
     }
 }
