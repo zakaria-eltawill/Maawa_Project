@@ -612,6 +612,94 @@ paths:
               schema: { $ref: '#/components/schemas/ProposalListResponse' }
         "401": { $ref: '#/components/responses/Unauthorized' }
 
+  /owner/proposals/{id}:
+    put:
+      tags: [Moderation]
+      summary: Update owner's proposal
+      description: |
+        **Owner-specific endpoint** - Update a proposal owned by the authenticated owner.
+        
+        **Update Rules:**
+        - Only PENDING or REJECTED proposals can be updated
+        - Owner can only update their own proposals
+        - Status automatically becomes PENDING after update
+        - All fields are optional (partial updates supported)
+        - Proposal type cannot be changed
+        
+        **Response:** Returns updated proposal with PENDING status
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProposalUpdateRequest' }
+      responses:
+        "200":
+          description: Proposal updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  status: { type: string, enum: [PENDING] }
+                  message: { type: string, example: "Proposal updated successfully. Status changed to PENDING." }
+        "400":
+          description: Bad Request - Proposal cannot be updated
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example:
+                type: "about:blank"
+                title: "Bad Request"
+                status: 400
+                detail: "Only PENDING or REJECTED proposals can be updated"
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "404": { $ref: '#/components/responses/NotFound' }
+        "422": { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Moderation]
+      summary: Delete owner's proposal
+      description: |
+        **Owner-specific endpoint** - Delete a proposal owned by the authenticated owner.
+        
+        **Delete Rules:**
+        - Only PENDING or REJECTED proposals can be deleted
+        - Owner can only delete their own proposals
+        - Hard delete from database (permanently removed)
+        
+        **Response:** Returns success message
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        "200":
+          description: Proposal deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: "Proposal deleted successfully" }
+        "400":
+          description: Bad Request - Proposal cannot be deleted
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example:
+                type: "about:blank"
+                title: "Bad Request"
+                status: 400
+                detail: "Only PENDING or REJECTED proposals can be deleted"
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
   /admin/proposals:
     get:
       tags: [Admin]
@@ -1436,6 +1524,69 @@ components:
           required: [type, property_id, reason]
           properties:
             type: { type: string, const: DELETE }
+            property_id: { type: string, format: uuid }
+            reason: { type: string, minLength: 3 }
+
+    ProposalUpdateRequest:
+      oneOf:
+        - type: object
+          description: Update ADD proposal - all fields optional
+          properties:
+            payload:
+              type: object
+              description: Property fields to update (partial updates supported)
+              properties:
+                title: { type: string, maxLength: 200 }
+                description: { type: string, maxLength: 5000 }
+                city: { type: string, maxLength: 80 }
+                type: { type: string, enum: [apartment, villa, chalet] }
+                price: { type: number, format: float, minimum: 0 }
+                location:
+                  type: object
+                  properties:
+                    latitude: { type: number, format: float, minimum: -90, maximum: 90 }
+                    longitude: { type: number, format: float, minimum: -180, maximum: 180 }
+                    map_url: { type: string, format: uri, maxLength: 500, nullable: true }
+                amenities:
+                  type: array
+                  items: { type: string, maxLength: 50 }
+                photos:
+                  type: array
+                  maxItems: 20
+                  items: { type: string, format: uri, maxLength: 500 }
+        - type: object
+          description: Update EDIT proposal - all fields optional
+          properties:
+            property_id: { type: string, format: uuid }
+            version: { type: integer, minimum: 1 }
+            payload:
+              type: object
+              description: Partial fields to update
+              properties:
+                title: { type: string, maxLength: 200 }
+                description: { type: string, maxLength: 5000 }
+                city: { type: string, maxLength: 80 }
+                type: { type: string, enum: [apartment, villa, chalet] }
+                price: { type: number, format: float, minimum: 0 }
+                location:
+                  type: object
+                  properties:
+                    latitude: { type: number, format: float, minimum: -90, maximum: 90 }
+                    longitude: { type: number, format: float, minimum: -180, maximum: 180 }
+                    map_url: { type: string, format: uri, maxLength: 500, nullable: true }
+                amenities:
+                  type: array
+                  items: { type: string, maxLength: 50 }
+                photos:
+                  type: array
+                  maxItems: 20
+                  items: { type: string, format: uri, maxLength: 500 }
+                unavailable_dates:
+                  type: array
+                  items: { type: string, format: date }
+        - type: object
+          description: Update DELETE proposal - all fields optional
+          properties:
             property_id: { type: string, format: uuid }
             reason: { type: string, minLength: 3 }
 

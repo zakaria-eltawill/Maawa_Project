@@ -1319,6 +1319,83 @@
 						"description": "List proposals for current owner"
 					},
 					"response": []
+				},
+				{
+					"name": "Update Owner Proposal",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"payload\": {\n        \"title\": \"Updated Property Title\",\n        \"price\": 300.00,\n        \"description\": \"Updated description\",\n        \"photos\": [\n            \"http://3.68.75.38/storage/proposals/photo1.jpg\",\n            \"http://3.68.75.38/storage/proposals/photo2.jpg\"\n        ]\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/owner/proposals/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owner",
+								"proposals",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Proposal UUID"
+								}
+							]
+						},
+						"description": "Update owner's proposal.\n\n**Update Rules:**\n- Only PENDING or REJECTED proposals can be updated\n- Owner can only update their own proposals\n- Status automatically becomes PENDING after update\n- All fields are optional (partial updates supported)\n- Proposal type cannot be changed\n\n**Request Body:**\n- For ADD proposals: Update `payload` object with property fields\n- For EDIT proposals: Update `payload`, `property_id`, or `version`\n- For DELETE proposals: Update `property_id` or `reason`\n\n**Response:**\n```json\n{\n  \"id\": \"proposal-uuid\",\n  \"status\": \"PENDING\",\n  \"message\": \"Proposal updated successfully. Status changed to PENDING.\"\n}\n```\n\n**Status Codes:**\n- 200 OK: Proposal updated successfully\n- 400 Bad Request: Proposal cannot be updated (not PENDING or REJECTED)\n- 401 Unauthorized: Missing or invalid authentication token\n- 403 Forbidden: Not an owner or not your proposal\n- 404 Not Found: Proposal not found\n- 422 Unprocessable Entity: Validation errors"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Owner Proposal",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/proposals/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owner",
+								"proposals",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Proposal UUID"
+								}
+							]
+						},
+						"description": "Delete owner's proposal.\n\n**Delete Rules:**\n- Only PENDING or REJECTED proposals can be deleted\n- Owner can only delete their own proposals\n- Hard delete from database (permanently removed)\n\n**Response:**\n```json\n{\n  \"message\": \"Proposal deleted successfully\"\n}\n```\n\n**Status Codes:**\n- 200 OK: Proposal deleted successfully\n- 400 Bad Request: Proposal cannot be deleted (not PENDING or REJECTED)\n- 401 Unauthorized: Missing or invalid authentication token\n- 403 Forbidden: Not an owner or not your proposal\n- 404 Not Found: Proposal not found"
+					},
+					"response": []
 				}
 			]
 		},
