@@ -19,17 +19,17 @@ class PropertyController extends Controller
 
         // Tenant: full explore mode - see all properties
         if ($user->isTenant()) {
-            $query = Property::query()->with(['owner:id,name', 'reviews']);
+            $query = Property::query()->with(['owner:id,name,email,phone_number,region', 'reviews']);
         }
         // Owner: only their own properties
         elseif ($user->isOwner()) {
             $query = Property::query()
                 ->where('owner_id', $user->id)
-                ->with(['owner:id,name', 'reviews']);
+                ->with(['owner:id,name,email,phone_number,region', 'reviews']);
         }
         // Admin: see all properties with full management access
         elseif ($user->isAdmin()) {
-            $query = Property::query()->with(['owner:id,name', 'reviews']);
+            $query = Property::query()->with(['owner:id,name,email,phone_number,region', 'reviews']);
         }
         // Unsupported roles
         else {
@@ -65,7 +65,7 @@ class PropertyController extends Controller
     public function show(string $id, Request $request): JsonResponse
     {
         $user = $request->user();
-        $property = Property::with(['owner', 'reviews.tenant', 'bookings'])->findOrFail($id);
+        $property = Property::with(['owner:id,name,email,phone_number,region', 'reviews.tenant', 'bookings'])->findOrFail($id);
 
         // If user is the owner, return owner-specific resource
         if ($user->isOwner() && $property->owner_id === $user->id) {
@@ -140,7 +140,7 @@ class PropertyController extends Controller
             ], 403);
         }
 
-        $property = Property::with(['owner', 'reviews', 'bookings'])
+        $property = Property::with(['owner:id,name,email,phone_number,region', 'reviews', 'bookings'])
             ->where('owner_id', $user->id)
             ->findOrFail($id);
 

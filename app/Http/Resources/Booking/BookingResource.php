@@ -39,6 +39,7 @@ class BookingResource extends JsonResource
                     'name' => $this->tenant->name,
                     'email' => $this->tenant->email,
                     'phone_number' => $this->tenant->phone_number,
+                    'region' => $this->tenant->region,
                 ];
             }),
         ];

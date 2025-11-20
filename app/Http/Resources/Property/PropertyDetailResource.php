@@ -48,10 +48,15 @@ class PropertyDetailResource extends JsonResource
             'description' => $this->description,
             'amenities' => $this->amenities ?? [],
             'photos' => $normalizedPhotos,
-            'owner' => [
-                'id' => $this->owner->id,
-                'name' => $this->owner->name,
-            ],
+            'owner' => $this->when($this->owner, function () {
+                return [
+                    'id' => $this->owner->id,
+                    'name' => $this->owner->name,
+                    'phone_number' => $this->owner->phone_number,
+                    'email' => $this->owner->email,
+                    'region' => $this->owner->region,
+                ];
+            }, null),
             'availability' => [
                 'unavailable_dates' => $this->unavailable_dates ?? [],
             ],

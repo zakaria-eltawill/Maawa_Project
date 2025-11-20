@@ -34,9 +34,9 @@ class BookingController extends Controller
         }
 
         // Tenant: only their bookings
-        if ($user->isTenant()) {
-            $query = Booking::where('tenant_id', $user->id)
-                ->with(['property:id,title,type,owner_id', 'tenant:id,name,phone_number']);
+            if ($user->isTenant()) {
+                $query = Booking::where('tenant_id', $user->id)
+                    ->with(['property:id,title,type,owner_id', 'tenant:id,name,email,phone_number,region']);
         }
         // Owner: all bookings on their properties
         elseif ($user->isOwner()) {
@@ -45,7 +45,7 @@ class BookingController extends Controller
                 })
                 ->with([
                     'property:id,title,type,owner_id',
-                    'tenant:id,name,phone_number'
+                    'tenant:id,name,email,phone_number,region'
                 ]);
         }
         // Admin: see all bookings with full information
@@ -151,7 +151,7 @@ class BookingController extends Controller
             })
             ->with([
                 'property:id,title,type,owner_id',
-                'tenant:id,name,phone_number'
+                'tenant:id,name,email,phone_number,region'
             ]);
 
         // Apply filters
@@ -195,7 +195,7 @@ class BookingController extends Controller
 
         // Get all bookings created by the tenant
         $query = Booking::where('tenant_id', $user->id)
-            ->with(['property:id,title,type,owner_id', 'tenant:id,name,phone_number']);
+            ->with(['property:id,title,type,owner_id', 'tenant:id,name,email,phone_number,region']);
 
         // Apply filters
         if ($request->filled('status')) {
@@ -259,7 +259,7 @@ class BookingController extends Controller
             ->where('status', $status)
             ->with([
                 'property:id,title,type,owner_id',
-                'tenant:id,name,phone_number'
+                'tenant:id,name,email,phone_number,region'
             ]);
 
         // Apply date filters
@@ -316,7 +316,7 @@ class BookingController extends Controller
         // Get tenant's bookings with specific status
         $query = Booking::where('tenant_id', $user->id)
             ->where('status', $status)
-            ->with(['property:id,title,type,owner_id', 'tenant:id,name,phone_number']);
+            ->with(['property:id,title,type,owner_id', 'tenant:id,name,email,phone_number,region']);
 
         // Apply date filters
         if ($request->filled('from')) {

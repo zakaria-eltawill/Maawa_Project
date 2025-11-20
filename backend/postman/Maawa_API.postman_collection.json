@@ -334,7 +334,7 @@
 								}
 							]
 						},
-						"description": "List properties with role-based access.\n\n**Role-based filtering:**\n- **Tenant:** Can explore all properties (full browse mode)\n- **Owner:** Can only see their own properties (management mode)\n- **Admin:** Can see all properties with full management access\n\n**Query Parameters:**\n- city: Filter by city\n- type: Filter by property type (apartment, villa, chalet)\n- min_price: Minimum price filter\n- max_price: Maximum price filter\n- per_page: Results per page (max 50)\n\n**Returns:**\n- Paginated list of properties with owner information\n\n**Authentication:** Bearer token required"
+						"description": "List properties with role-based access.\n\n**Role-based filtering:**\n- **Tenant:** Can explore all properties (full browse mode)\n- **Owner:** Can only see their own properties (management mode)\n- **Admin:** Can see all properties with full management access\n\n**Response format:**\n- Returns PropertySummaryResource (summary view)\n- Each property includes: id, title, city, type, price, thumbnail, avg_rating\n- Owner information is NOT included in summary (use GET /properties/{id} for owner details)\n\n**Query Parameters:**\n- city: Filter by city\n- type: Filter by property type (apartment, villa, chalet)\n- min_price: Minimum price filter\n- max_price: Maximum price filter\n- per_page: Results per page (max 50)\n\n**Note:** For complete property details including owner information, use GET /properties/{id}\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				},
@@ -365,7 +365,7 @@
 								}
 							]
 						},
-						"description": "Get a property by ID. Response includes location object with latitude, longitude, and map_url (Google Maps link or stored location_url)."
+						"description": "Get a property by ID.\n\n**Response includes:**\n- Full property details (title, description, city, type, price, photos, amenities)\n- Location object with latitude, longitude, and map_url (Google Maps link or stored location_url)\n- **Owner information** (id, name, phone_number, email, region) - Complete owner contact details\n- Availability information (unavailable_dates)\n- Reviews count and average rating\n\n**Role-based response:**\n- **Tenant/Admin:** Returns PropertyDetailResource with full owner information\n- **Owner viewing own property:** Returns PropertyOwnerResource with statistics (no owner info)\n\n**Owner object structure:**\n```json\n{\n  \"owner\": {\n    \"id\": \"uuid\",\n    \"name\": \"Owner Name\",\n    \"phone_number\": \"0912345678\",\n    \"email\": \"owner@example.com\",\n    \"region\": \"Tripoli\"\n  }\n}\n```\n\n**Use this endpoint for:**\n- Property detail page for tenants (with owner contact info)\n- Property detail page for owners (with statistics)\n- Displaying owner contact button/phone number\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				},
@@ -575,7 +575,7 @@
 								}
 							]
 						},
-						"description": "List bookings with role-based access (general endpoint).\n\n**Note:** For role-specific endpoints, use:\n- `/v1/owner/bookings` - Owner-specific endpoint\n- `/v1/tenant/bookings` - Tenant-specific endpoint\n\n**Role-based filtering:**\n- **Tenant:** Returns only bookings created by the tenant\n- **Owner:** Returns all bookings made on properties owned by the owner\n- **Admin:** Returns all bookings with complete information (full management access)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status, payment_due_at)\n- Nested property details:\n  - Tenant/Owner: id, title, type, city, price, thumbnail\n  - Admin: id, title, type, owner_id, city, price, thumbnail\n- Nested tenant details:\n  - Tenant/Owner: id, name, phone_number\n  - Admin: id, name, email, phone_number, region\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required"
+						"description": "List bookings with role-based access (general endpoint).\n\n**Note:** For role-specific endpoints, use:\n- `/v1/owner/bookings` - Owner-specific endpoint\n- `/v1/tenant/bookings` - Tenant-specific endpoint\n\n**Role-based filtering:**\n- **Tenant:** Returns only bookings created by the tenant\n- **Owner:** Returns all bookings made on properties owned by the owner\n- **Admin:** Returns all bookings with complete information (full management access)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status, payment_due_at)\n- Nested property details:\n  - Tenant/Owner: id, title, type, city, price, thumbnail\n  - Admin: id, title, type, owner_id, city, price, thumbnail\n- Nested tenant details (complete contact information):\n  - All roles: id, name, email, phone_number, region\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				},
@@ -676,7 +676,7 @@
 								}
 							]
 						},
-						"description": "Get all bookings for owner's properties.\n\n**Owner-specific endpoint** - Returns all bookings made on properties owned by the authenticated owner.\n\n**Access:** Only owners can access this endpoint (403 Forbidden for tenants/admins)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status)\n- Nested property details (id, title, type, owner_id)\n- Nested tenant details (id, name, phone_number)\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required (owner role)"
+						"description": "Get all bookings for owner's properties.\n\n**Owner-specific endpoint** - Returns all bookings made on properties owned by the authenticated owner.\n\n**Access:** Only owners can access this endpoint (403 Forbidden for tenants/admins)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status)\n- Nested property details (id, title, type, owner_id)\n- Nested tenant details (id, name, email, phone_number, region) - Complete tenant contact information\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required (owner role)"
 					},
 					"response": []
 				},
@@ -722,7 +722,7 @@
 								}
 							]
 						},
-						"description": "Get all bookings for tenant.\n\n**Tenant-specific endpoint** - Returns all bookings created by the authenticated tenant.\n\n**Access:** Only tenants can access this endpoint (403 Forbidden for owners/admins)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status)\n- Nested property details (id, title, type, owner_id)\n- Nested tenant details (id, name, phone_number)\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required (tenant role)"
+						"description": "Get all bookings for tenant.\n\n**Tenant-specific endpoint** - Returns all bookings created by the authenticated tenant.\n\n**Access:** Only tenants can access this endpoint (403 Forbidden for owners/admins)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status)\n- Nested property details (id, title, type, owner_id)\n- Nested tenant details (id, name, email, phone_number, region) - Complete tenant contact information\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required (tenant role)"
 					},
 					"response": []
 				},

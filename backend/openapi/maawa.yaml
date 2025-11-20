@@ -1049,9 +1049,13 @@ components:
                   position: { type: integer }
             owner:
               type: object
+              nullable: true
               properties:
                 id: { type: string, format: uuid }
                 name: { type: string }
+                phone_number: { type: string }
+                email: { type: string, format: email }
+                region: { type: string }
             availability:
               type: object
               properties:
@@ -1096,6 +1100,7 @@ components:
             name: { type: string }
             email: { type: string, format: email }
             phone_number: { type: string }
+            region: { type: string }
 
     Proposal:
       type: object
