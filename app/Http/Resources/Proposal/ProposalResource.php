@@ -20,6 +20,8 @@ class ProposalResource extends JsonResource
             'version' => $this->version,
             'reason' => $this->reason,
             'applied_at' => $this->applied_at?->format('Y-m-d\TH:i:s\Z'),
+            'created_at' => $this->created_at?->format('Y-m-d\TH:i:s\Z'),
+            'updated_at' => $this->updated_at?->format('Y-m-d\TH:i:s\Z'),
         ];
     }
 }

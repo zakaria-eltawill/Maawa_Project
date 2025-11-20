@@ -1232,6 +1232,11 @@ components:
         payload:
           type: object
           description: "For ADD: full property; for EDIT: diff fields; for DELETE: reason captured separately."
+        version: { type: integer, nullable: true }
+        reason: { type: string, nullable: true }
+        applied_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
 
     Review:
       type: object
