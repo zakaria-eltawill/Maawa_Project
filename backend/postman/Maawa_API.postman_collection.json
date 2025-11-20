@@ -1321,6 +1321,38 @@
 					"response": []
 				},
 				{
+					"name": "Get Owner Proposal by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/owner/proposals/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owner",
+								"proposals",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Proposal UUID"
+								}
+							]
+						},
+						"description": "Get a single proposal owned by the authenticated owner.\n\n**Owner-specific endpoint** - Returns full proposal details.\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n**Authorization:** Owner can only view their own proposals (404 if proposal belongs to another owner)\n\n**Response includes:**\n- Full proposal details (id, type, status, payload, version, reason, etc.)\n- All proposal data including payload structure based on type (ADD/EDIT/DELETE)\n- Timestamps (created_at, updated_at, applied_at)\n\n**Response Example:**\n```json\n{\n  \"id\": \"proposal-uuid\",\n  \"owner_id\": \"owner-uuid\",\n  \"property_id\": \"property-uuid\",\n  \"type\": \"ADD\",\n  \"status\": \"PENDING\",\n  \"payload\": {\n    \"title\": \"Beautiful Apartment\",\n    \"description\": \"...\",\n    \"city\": \"Benghazi\",\n    \"type\": \"apartment\",\n    \"price\": 250.00,\n    \"location\": {\n      \"latitude\": 32.115,\n      \"longitude\": 20.067\n    },\n    \"amenities\": [\"wifi\", \"parking\"],\n    \"photos\": [\"http://...\"]\n  },\n  \"version\": null,\n  \"reason\": null,\n  \"notes\": null,\n  \"applied_at\": null\n}\n```\n\n**Status Codes:**\n- 200 OK: Proposal found and returned\n- 401 Unauthorized: Missing or invalid authentication token\n- 403 Forbidden: Not an owner\n- 404 Not Found: Proposal not found or not owned by authenticated owner\n\n**Authentication:** Bearer token required (owner role)"
+					},
+					"response": []
+				},
+				{
 					"name": "Update Owner Proposal",
 					"request": {
 						"method": "PUT",

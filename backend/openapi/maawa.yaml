@@ -613,6 +613,32 @@ paths:
         "401": { $ref: '#/components/responses/Unauthorized' }
 
   /owner/proposals/{id}:
+    get:
+      tags: [Moderation]
+      summary: Get owner's proposal by ID
+      description: |
+        **Owner-specific endpoint** - Get a single proposal owned by the authenticated owner.
+        
+        **Access:** Only owners can access (403 Forbidden for tenants/admins)
+        **Authorization:** Owner can only view their own proposals (404 if proposal belongs to another owner)
+        
+        **Response includes:**
+        - Full proposal details (id, type, status, payload, version, reason, etc.)
+        - All proposal data including payload structure based on type (ADD/EDIT/DELETE)
+        - Timestamps (created_at, updated_at, applied_at)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        "200":
+          description: Proposal details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Proposal' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "404": { $ref: '#/components/responses/NotFound' }
     put:
       tags: [Moderation]
       summary: Update owner's proposal

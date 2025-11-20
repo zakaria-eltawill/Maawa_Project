@@ -71,6 +71,28 @@ class ProposalController extends Controller
     }
 
     /**
+     * Get owner's proposal by ID
+     * Owner can only view their own proposals
+     */
+    public function show(string $id): JsonResponse
+    {
+        $user = auth()->user();
+
+        if ($user->role !== 'owner') {
+            return response()->json([
+                'type' => 'about:blank',
+                'title' => 'Forbidden',
+                'status' => 403,
+                'detail' => 'Only owners can view proposals',
+            ], 403);
+        }
+
+        $proposal = Proposal::where('owner_id', $user->id)->findOrFail($id);
+
+        return response()->json(new ProposalResource($proposal));
+    }
+
+    /**
      * Update owner's proposal
      * Only PENDING or REJECTED proposals can be updated
      * Status automatically becomes PENDING after update

@@ -49,6 +49,7 @@ Route::middleware(['auth:api'])->group(function () {
     // Proposals
     Route::post('/proposals', [App\Http\Controllers\ProposalController::class, 'store']);
     Route::get('/owner/proposals', [App\Http\Controllers\ProposalController::class, 'ownerIndex']);
+    Route::get('/owner/proposals/{id}', [App\Http\Controllers\ProposalController::class, 'show']);
     Route::put('/owner/proposals/{id}', [App\Http\Controllers\ProposalController::class, 'update']);
     Route::delete('/owner/proposals/{id}', [App\Http\Controllers\ProposalController::class, 'destroy']);
     
