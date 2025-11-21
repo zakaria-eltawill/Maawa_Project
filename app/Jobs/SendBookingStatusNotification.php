@@ -55,8 +55,11 @@ class SendBookingStatusNotification implements ShouldQueue
         } elseif ($status === 'FAILED') {
             $title = __('notifications.booking_failed_title');
             $emoji = '❌';
+        } elseif ($status === 'CANCELED') {
+            $title = __('notifications.booking_canceled_title', [], 'en');
+            $emoji = '🚫';
         } else {
-            // Only send notifications for CONFIRMED or FAILED status
+            // Only send notifications for CONFIRMED, FAILED, or CANCELED status
             return;
         }
 
@@ -75,11 +78,20 @@ class SendBookingStatusNotification implements ShouldQueue
                 'checkout' => $checkOut,
                 'total' => $total,
             ]);
-        } else {
+        } elseif ($status === 'FAILED') {
             $bodyText = __('mail.booking_failed_html', [
                 'title' => $propertyTitle,
                 'city' => $city,
             ]);
+        } elseif ($status === 'CANCELED') {
+            $bodyText = __('mail.booking_canceled_html', [
+                'title' => $propertyTitle,
+                'city' => $city,
+                'checkin' => $checkIn,
+                'checkout' => $checkOut,
+            ], 'en');
+        } else {
+            $bodyText = '';
         }
 
         // Prepare FCM payload

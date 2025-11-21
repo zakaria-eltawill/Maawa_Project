@@ -33,9 +33,12 @@ class BookingStatusMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         $status = $this->booking->status;
-        $subject = $status === 'CONFIRMED'
-            ? __('mail.booking_confirmed_subject', ['id' => $this->booking->id])
-            : __('mail.booking_failed_subject', ['id' => $this->booking->id]);
+        $subject = match ($status) {
+            'CONFIRMED' => __('mail.booking_confirmed_subject', ['id' => $this->booking->id]),
+            'FAILED' => __('mail.booking_failed_subject', ['id' => $this->booking->id]),
+            'CANCELED' => __('mail.booking_canceled_subject', ['id' => $this->booking->id]),
+            default => __('mail.booking_confirmed_subject', ['id' => $this->booking->id]),
+        };
 
         return new Envelope(
             subject: $subject,

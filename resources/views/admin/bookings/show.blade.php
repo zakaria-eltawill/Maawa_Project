@@ -15,22 +15,69 @@
     </a>
 </div>
 
+<!-- Success/Error Messages -->
+@if(session('success'))
+    <div class="mb-6 bg-green-50 border-l-4 border-green-400 p-4 rounded-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-green-700">{{ session('success') }}</p>
+            </div>
+        </div>
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-red-700">{{ session('error') }}</p>
+            </div>
+        </div>
+    </div>
+@endif
+
 <!-- Booking Details Card -->
 <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-100 p-8">
     <div class="flex items-center justify-between mb-8">
         <h2 class="text-3xl font-bold text-gray-900">Booking Details</h2>
-        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium
-            @if($booking->status === 'CONFIRMED') bg-green-100 text-green-800
-            @elseif($booking->status === 'PENDING') bg-yellow-100 text-yellow-800
-            @elseif($booking->status === 'ACCEPTED') bg-blue-100 text-blue-800
-            @elseif($booking->status === 'REJECTED') bg-red-100 text-red-800
-            @elseif($booking->status === 'CANCELED') bg-gray-100 text-gray-800
-            @elseif($booking->status === 'EXPIRED') bg-orange-100 text-orange-800
-            @elseif($booking->status === 'COMPLETED') bg-purple-100 text-purple-800
-            @else bg-gray-100 text-gray-800
-            @endif">
-            {{ $booking->status }}
-        </span>
+        <div class="flex items-center gap-4">
+            <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium
+                @if($booking->status === 'CONFIRMED') bg-green-100 text-green-800
+                @elseif($booking->status === 'PENDING') bg-yellow-100 text-yellow-800
+                @elseif($booking->status === 'ACCEPTED') bg-blue-100 text-blue-800
+                @elseif($booking->status === 'REJECTED') bg-red-100 text-red-800
+                @elseif($booking->status === 'CANCELED') bg-gray-100 text-gray-800
+                @elseif($booking->status === 'EXPIRED') bg-orange-100 text-orange-800
+                @elseif($booking->status === 'COMPLETED') bg-purple-100 text-purple-800
+                @else bg-gray-100 text-gray-800
+                @endif">
+                {{ $booking->status }}
+            </span>
+            
+            @if(in_array($booking->status, ['PENDING', 'ACCEPTED', 'CONFIRMED']))
+                <form action="{{ route('admin.bookings.cancel', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to cancel this booking? This action cannot be undone.');">
+                    @csrf
+                    <button 
+                        type="submit"
+                        class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Cancel Booking
+                    </button>
+                </form>
+            @endif
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">

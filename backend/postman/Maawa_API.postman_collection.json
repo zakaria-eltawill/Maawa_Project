@@ -1536,6 +1536,39 @@
 					"response": []
 				},
 				{
+					"name": "Cancel Booking (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/bookings/:id/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"bookings",
+								":id",
+								"cancel"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Booking UUID"
+								}
+							]
+						},
+						"description": "Cancel a booking (Admin only).\n\n**Admin-only endpoint** - Cancel a booking.\n\n**Cancel Rules:**\n- Only admins can cancel bookings\n- Can only cancel bookings with status: PENDING, ACCEPTED, or CONFIRMED\n- Booking status is changed to CANCELED\n- This action cannot be undone\n\n**Use Cases:**\n- Cancel bookings due to tenant violations\n- Cancel bookings due to property issues\n- Cancel bookings for administrative reasons\n\n**Response:**\n```json\n{\n  \"id\": \"booking-uuid\",\n  \"status\": \"CANCELED\",\n  \"message\": \"Booking has been canceled successfully.\"\n}\n```\n\n**Status Codes:**\n- 200 OK: Booking canceled successfully\n- 400 Bad Request: Booking cannot be canceled (not PENDING, ACCEPTED, or CONFIRMED)\n- 401 Unauthorized: Missing or invalid authentication token\n- 403 Forbidden: Not an admin\n- 404 Not Found: Booking not found\n\n**Authentication:** Bearer token required (admin role)"
+					},
+					"response": []
+				},
+				{
 					"name": "Review Proposal (REJECTED)",
 					"request": {
 						"method": "POST",

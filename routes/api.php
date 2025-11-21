@@ -53,11 +53,14 @@ Route::middleware(['auth:api'])->group(function () {
     Route::put('/owner/proposals/{id}', [App\Http\Controllers\ProposalController::class, 'update']);
     Route::delete('/owner/proposals/{id}', [App\Http\Controllers\ProposalController::class, 'destroy']);
     
-    // Admin
-    Route::middleware('admin')->group(function () {
-        Route::get('/admin/proposals', [App\Http\Controllers\Admin\ProposalController::class, 'index']);
-        Route::post('/admin/proposals/{id}/review', [App\Http\Controllers\Admin\ProposalController::class, 'review'])
-            ->middleware([App\Http\Middleware\IdempotencyMiddleware::class]);
+           // Admin
+           Route::middleware('admin')->group(function () {
+               Route::get('/admin/proposals', [App\Http\Controllers\Admin\ProposalController::class, 'index']);
+               Route::post('/admin/proposals/{id}/review', [App\Http\Controllers\Admin\ProposalController::class, 'review'])
+                   ->middleware([App\Http\Middleware\IdempotencyMiddleware::class]);
+               
+               // Admin Booking Management
+               Route::post('/admin/bookings/{id}/cancel', [App\Http\Controllers\Admin\BookingController::class, 'cancel']);
 
         // Admin - Users management
         Route::get('/admin/users', [App\Http\Controllers\Admin\UserController::class, 'index']);

@@ -62,6 +62,7 @@ Route::prefix('admin')
         // Bookings
         Route::get('/bookings', [App\Http\Controllers\AdminPanel\BookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/{id}', [App\Http\Controllers\AdminPanel\BookingController::class, 'show'])->name('bookings.show');
+        Route::post('/bookings/{id}/cancel', [App\Http\Controllers\AdminPanel\BookingController::class, 'cancel'])->name('bookings.cancel');
 
         // Users
         Route::get('/users', [App\Http\Controllers\AdminPanel\UserController::class, 'index'])->name('users.index');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AdminPanel;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendBookingStatusNotification;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 
@@ -51,5 +52,35 @@ class BookingController extends Controller
     {
         $booking = Booking::with(['property', 'tenant'])->findOrFail($id);
         return view('admin.bookings.show', compact('booking'));
+    }
+
+    /**
+     * Cancel a booking (Admin only)
+     * Only admins can cancel bookings
+     * Can cancel bookings with status: PENDING, ACCEPTED, CONFIRMED
+     */
+    public function cancel(string $id, Request $request)
+    {
+        $booking = Booking::with(['property', 'tenant'])->findOrFail($id);
+
+        // Check if booking can be canceled
+        $cancelableStatuses = ['PENDING', 'ACCEPTED', 'CONFIRMED'];
+        if (!in_array($booking->status, $cancelableStatuses)) {
+            return redirect()
+                ->route('admin.bookings.show', $id)
+                ->with('error', 'This booking cannot be canceled. Only PENDING, ACCEPTED, or CONFIRMED bookings can be canceled.');
+        }
+
+        // Update booking status to CANCELED
+        $booking->update([
+            'status' => 'CANCELED',
+        ]);
+
+        // Send notifications to tenant and owner
+        SendBookingStatusNotification::dispatch($booking);
+
+        return redirect()
+            ->route('admin.bookings.show', $id)
+            ->with('success', 'Booking has been canceled successfully.');
     }
 }

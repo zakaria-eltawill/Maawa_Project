@@ -746,6 +746,52 @@ paths:
         "401": { $ref: '#/components/responses/Unauthorized' }
         "403": { $ref: '#/components/responses/Forbidden' }
 
+  /admin/bookings/{id}/cancel:
+    post:
+      tags: [Admin]
+      summary: Cancel a booking (Admin only)
+      description: |
+        **Admin-only endpoint** - Cancel a booking.
+        
+        **Cancel Rules:**
+        - Only admins can cancel bookings
+        - Can only cancel bookings with status: PENDING, ACCEPTED, or CONFIRMED
+        - Booking status is changed to CANCELED
+        - This action cannot be undone
+        
+        **Use Cases:**
+        - Cancel bookings due to tenant violations
+        - Cancel bookings due to property issues
+        - Cancel bookings for administrative reasons
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        "200":
+          description: Booking canceled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  status: { type: string, enum: [CANCELED] }
+                  message: { type: string, example: "Booking has been canceled successfully." }
+        "400":
+          description: Bad Request - Booking cannot be canceled
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example:
+                type: "about:blank"
+                title: "Bad Request"
+                status: 400
+                detail: "This booking cannot be canceled. Only PENDING, ACCEPTED, or CONFIRMED bookings can be canceled."
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
   /admin/proposals/{id}/review:
     post:
       tags: [Admin]
