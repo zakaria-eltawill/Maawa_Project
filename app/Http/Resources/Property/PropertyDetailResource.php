@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Property;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -44,6 +45,9 @@ class PropertyDetailResource extends JsonResource
         // Get reviews count
         $reviewsCount = $this->reviews()->count();
 
+        // Calculate unavailable dates from bookings (ACCEPTED and CONFIRMED)
+        $unavailableDates = $this->calculateUnavailableDates();
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -65,8 +69,9 @@ class PropertyDetailResource extends JsonResource
                     'region' => $this->owner->region,
                 ];
             }, null),
+            'unavailable_dates' => $unavailableDates, // At root level for frontend
             'availability' => [
-                'unavailable_dates' => $this->unavailable_dates ?? [],
+                'unavailable_dates' => $unavailableDates, // Keep for backward compatibility
             ],
             'location' => [
                 'latitude' => $this->location_lat,
@@ -78,5 +83,61 @@ class PropertyDetailResource extends JsonResource
             ],
             'reviews_count' => $reviewsCount,
         ];
+    }
+
+    /**
+     * Calculate unavailable dates from bookings and property settings
+     * 
+     * Includes:
+     * - Dates from ACCEPTED bookings (check_in to check_out, exclusive)
+     * - Dates from CONFIRMED bookings (check_in to check_out, exclusive)
+     * - Dates explicitly blocked by owner (from property.unavailable_dates)
+     * 
+     * @return array Array of date strings in YYYY-MM-DD format
+     */
+    protected function calculateUnavailableDates(): array
+    {
+        $unavailableDates = [];
+        
+        // Get dates from ACCEPTED and CONFIRMED bookings
+        // Use loaded relationship if available, otherwise query
+        $bookings = $this->relationLoaded('bookings')
+            ? $this->bookings->whereIn('status', ['ACCEPTED', 'CONFIRMED'])
+            : $this->bookings()->whereIn('status', ['ACCEPTED', 'CONFIRMED'])->get(['check_in', 'check_out']);
+        
+        foreach ($bookings as $booking) {
+            $checkIn = Carbon::parse($booking->check_in);
+            $checkOut = Carbon::parse($booking->check_out);
+            
+            // Generate all dates from check_in to check_out (exclusive)
+            $currentDate = $checkIn->copy();
+            while ($currentDate->lt($checkOut)) {
+                $unavailableDates[] = $currentDate->format('Y-m-d');
+                $currentDate->addDay();
+            }
+        }
+        
+        // Merge with property's explicitly blocked dates
+        $propertyBlockedDates = $this->unavailable_dates ?? [];
+        if (is_array($propertyBlockedDates)) {
+            foreach ($propertyBlockedDates as $date) {
+                // Ensure date is in YYYY-MM-DD format
+                if (is_string($date)) {
+                    try {
+                        $formattedDate = Carbon::parse($date)->format('Y-m-d');
+                        $unavailableDates[] = $formattedDate;
+                    } catch (\Exception $e) {
+                        // Skip invalid dates
+                        continue;
+                    }
+                }
+            }
+        }
+        
+        // Remove duplicates and sort
+        $unavailableDates = array_unique($unavailableDates);
+        sort($unavailableDates);
+        
+        return array_values($unavailableDates);
     }
 }

@@ -1187,6 +1187,19 @@ components:
             avg_rating: { type: number, format: float, description: "Average rating (0.0 if no reviews)" }
             average_rating: { type: number, format: float, description: "Alias for avg_rating for frontend compatibility (0.0 if no reviews)" }
             reviews_count: { type: integer, description: "Total number of reviews" }
+            unavailable_dates:
+              type: array
+              items: { type: string, format: date }
+              description: |
+                Array of unavailable dates in YYYY-MM-DD format.
+                
+                Includes:
+                - Dates from ACCEPTED bookings (check_in to check_out, exclusive)
+                - Dates from CONFIRMED bookings (check_in to check_out, exclusive)
+                - Dates explicitly blocked by owner (from property.unavailable_dates)
+                
+                Example: ["2025-12-06", "2025-12-07", "2025-12-08"]
+              example: ["2025-12-06", "2025-12-07", "2025-12-08"]
 
     Booking:
       type: object
