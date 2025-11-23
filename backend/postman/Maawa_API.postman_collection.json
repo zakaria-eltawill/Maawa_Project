@@ -575,7 +575,7 @@
 								}
 							]
 						},
-						"description": "List bookings with role-based access (general endpoint).\n\n**Note:** For role-specific endpoints, use:\n- `/v1/owner/bookings` - Owner-specific endpoint\n- `/v1/tenant/bookings` - Tenant-specific endpoint\n\n**Role-based filtering:**\n- **Tenant:** Returns only bookings created by the tenant\n- **Owner:** Returns all bookings made on properties owned by the owner\n- **Admin:** Returns all bookings with complete information (full management access)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status, payment_due_at)\n- Nested property details:\n  - Tenant/Owner: id, title, type, city, price, thumbnail\n  - Admin: id, title, type, owner_id, city, price, thumbnail\n- Nested tenant details (complete contact information):\n  - All roles: id, name, email, phone_number, region\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required"
+						"description": "List bookings with role-based access (general endpoint).\n\n**Note:** For role-specific endpoints, use:\n- `/v1/owner/bookings` - Owner-specific endpoint\n- `/v1/tenant/bookings` - Tenant-specific endpoint\n\n**Role-based filtering:**\n- **Tenant:** Returns only bookings created by the tenant\n- **Owner:** Returns all bookings made on properties owned by the owner\n- **Admin:** Returns all bookings with complete information (full management access)\n\n**Response includes:**\n- Booking details (id, check_in, check_out, guests, total, status, is_paid, payment_due_at)\n- Nested property details:\n  - Tenant/Owner: id, title, type, city, price, thumbnail\n  - Admin: id, title, type, owner_id, city, price, thumbnail\n- Nested tenant details (complete contact information):\n  - All roles: id, name, email, phone_number, region\n\n**Query Parameters:**\n- status: Filter by booking status (PENDING, ACCEPTED, CONFIRMED, etc.)\n- from: Filter bookings from date\n- to: Filter bookings to date\n- per_page: Results per page (max 50)\n\n**Authentication:** Bearer token required"
 					},
 					"response": []
 				},
@@ -1154,9 +1154,145 @@
 								"mock"
 							]
 						},
-						"description": "Mock payment endpoint to finalize a booking. Set \"fail\" to true to simulate a failed payment (booking status=FAILED). When successful, booking status becomes CONFIRMED. Both outcomes trigger push + email notifications to the tenant and property owner."
+						"description": "Mock payment endpoint to finalize a booking.\n\n**Status Requirements:**\n- Booking must be in ACCEPTED or CONFIRMED status (410 Gone if not)\n\n**Payment Processing:**\n- On success: Updates booking status to CONFIRMED and sets `is_paid = true`\n- On failure (if `fail: true`): Updates booking status to FAILED and sets `is_paid = false`\n- Both outcomes trigger push + email notifications to tenant and owner\n\n**Request Body:**\n- `booking_id` (required): UUID of the booking\n- `fail` (optional, default: false): Set to true to simulate payment failure\n\n**Response (Success):**\n- `booking_id`: UUID of the booking\n- `status`: CONFIRMED\n- `is_paid`: true\n- `receipt_no`: Mock receipt number\n- `paid_at`: Payment timestamp\n\n**Idempotency:** Use X-Idempotency-Key header to prevent duplicate payments"
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Success - Payment Confirmed",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "X-Idempotency-Key",
+										"value": "550e8400-e29b-41d4-a716-446655440000"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"booking_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n    \"fail\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/payments/mock",
+									"host": ["{{base_url}}"],
+									"path": ["payments", "mock"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"booking_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n    \"status\": \"CONFIRMED\",\n    \"is_paid\": true,\n    \"receipt_no\": \"MOCK-A1B2C3D4E5F6\",\n    \"paid_at\": \"2025-11-23T22:46:34Z\"\n}"
+						},
+						{
+							"name": "Error - Booking Not in Valid Status",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "X-Idempotency-Key",
+										"value": "550e8400-e29b-41d4-a716-446655440000"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"booking_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n    \"fail\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/payments/mock",
+									"host": ["{{base_url}}"],
+									"path": ["payments", "mock"]
+								}
+							},
+							"status": "Gone",
+							"code": 410,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/problem+json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"type\": \"about:blank\",\n    \"title\": \"Gone\",\n    \"status\": 410,\n    \"detail\": \"Booking is not in ACCEPTED or CONFIRMED status\"\n}"
+						},
+						{
+							"name": "Error - Payment Failed",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "X-Idempotency-Key",
+										"value": "550e8400-e29b-41d4-a716-446655440000"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"booking_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n    \"fail\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/payments/mock",
+									"host": ["{{base_url}}"],
+									"path": ["payments", "mock"]
+								}
+							},
+							"status": "Payment Required",
+							"code": 402,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/problem+json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"type\": \"about:blank\",\n    \"title\": \"Payment Failed\",\n    \"status\": 402,\n    \"detail\": \"Payment processing failed\",\n    \"booking_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n    \"status\": \"FAILED\"\n}"
+						}
+					]
 				}
 			]
 		},

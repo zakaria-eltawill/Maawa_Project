@@ -556,6 +556,18 @@ paths:
     post:
       tags: [Payments]
       summary: Mock payment to confirm booking
+      description: |
+        Process a mock payment for a booking. Accepts bookings with **ACCEPTED** or **CONFIRMED** status.
+        
+        **Status Requirements:**
+        - Booking must be in ACCEPTED or CONFIRMED status (410 Gone if not)
+        
+        **Payment Processing:**
+        - On success: Updates booking status to CONFIRMED and sets `is_paid = true`
+        - On failure (if `fail: true`): Updates booking status to FAILED and sets `is_paid = false`
+        - Both outcomes trigger push + email notifications to tenant and owner
+        
+        **Idempotency:** Use X-Idempotency-Key header to prevent duplicate payments
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -570,8 +582,22 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/MockPaymentResponse' }
         "401": { $ref: '#/components/responses/Unauthorized' }
+        "402":
+          description: Payment Failed
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
         "409": { $ref: '#/components/responses/Conflict' }
-        "410": { $ref: '#/components/responses/Gone' }
+        "410":
+          description: Gone - Booking is not in ACCEPTED or CONFIRMED status
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example:
+                type: "about:blank"
+                title: "Gone"
+                status: 410
+                detail: "Booking is not in ACCEPTED or CONFIRMED status"
         "422": { $ref: '#/components/responses/ValidationError' }
 
   ########################
@@ -1259,7 +1285,8 @@ components:
         total: { type: number, format: float }
         status:
           type: string
-          enum: [PENDING, ACCEPTED, CONFIRMED, REJECTED, CANCELED, EXPIRED, COMPLETED]
+          enum: [PENDING, ACCEPTED, CONFIRMED, REJECTED, CANCELED, EXPIRED, COMPLETED, FAILED]
+        is_paid: { type: boolean, description: "Indicates if payment has been completed" }
         payment_due_at: { type: string, format: date-time, nullable: true }
         property:
           type: object
@@ -1571,6 +1598,10 @@ components:
       required: [booking_id]
       properties:
         booking_id: { type: string, format: uuid }
+        fail:
+          type: boolean
+          default: false
+          description: "Set to true to simulate a failed payment"
 
     MockPaymentResponse:
       type: object
@@ -1579,8 +1610,9 @@ components:
         status:
           type: string
           enum: [CONFIRMED]
-        receipt_no: { type: string }
-        paid_at: { type: string, format: date-time }
+        is_paid: { type: boolean, description: "Always true for successful payments" }
+        receipt_no: { type: string, description: "Mock receipt number" }
+        paid_at: { type: string, format: date-time, description: "Payment timestamp" }
 
     # Moderation
     ProposalCreateRequest:

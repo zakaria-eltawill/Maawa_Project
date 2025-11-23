@@ -13,12 +13,13 @@ class PaymentController extends Controller
     {
         $booking = Booking::findOrFail($request->booking_id);
 
-        if ($booking->status !== 'ACCEPTED') {
+        // Accept both ACCEPTED and CONFIRMED statuses
+        if (!in_array($booking->status, ['ACCEPTED', 'CONFIRMED'])) {
             return response()->json([
                 'type' => 'about:blank',
                 'title' => 'Gone',
                 'status' => 410,
-                'detail' => 'Booking is not in ACCEPTED status',
+                'detail' => 'Booking is not in ACCEPTED or CONFIRMED status',
             ], 410);
         }
 
@@ -28,7 +29,7 @@ class PaymentController extends Controller
 
         if ($shouldFail) {
             // Payment failed
-            $booking->update(['status' => 'FAILED']);
+            $booking->update(['status' => 'FAILED', 'is_paid' => false]);
 
             // Dispatch notification job
             SendBookingStatusNotification::dispatch($booking);
@@ -43,8 +44,11 @@ class PaymentController extends Controller
             ], 402);
         }
 
-        // Payment successful
-        $booking->update(['status' => 'CONFIRMED']);
+        // Payment successful - update status to CONFIRMED and set is_paid to true
+        $booking->update([
+            'status' => 'CONFIRMED',
+            'is_paid' => true,
+        ]);
 
         // Dispatch notification job
         SendBookingStatusNotification::dispatch($booking);
@@ -52,6 +56,7 @@ class PaymentController extends Controller
         return response()->json([
             'booking_id' => $booking->id,
             'status' => 'CONFIRMED',
+            'is_paid' => true,
             'receipt_no' => 'MOCK-' . strtoupper(substr(md5($booking->id . now()), 0, 12)),
             'paid_at' => now()->format('Y-m-d\TH:i:s\Z'),
         ]);

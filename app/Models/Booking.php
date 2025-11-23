@@ -21,6 +21,7 @@ class Booking extends Model
         'total',
         'status',
         'payment_due_at',
+        'is_paid',
     ];
 
     protected function casts(): array

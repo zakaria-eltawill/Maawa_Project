@@ -18,6 +18,7 @@ class BookingResource extends JsonResource
             'guests' => $this->guests,
             'total' => (float) $this->total,
             'status' => $this->status,
+            'is_paid' => (bool) $this->is_paid,
             'payment_due_at' => $this->payment_due_at?->format('Y-m-d\TH:i:s\Z'),
             
             // Property details for displaying title, type, price
