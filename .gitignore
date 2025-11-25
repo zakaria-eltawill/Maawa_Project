@@ -13,6 +13,11 @@
 /.zed
 /auth.json
 /node_modules
+*.json
+!composer.json
+!package.json
+!package-lock.json
+firebase-service-account*.json
 /public/build
 /public/hot
 /public/storage

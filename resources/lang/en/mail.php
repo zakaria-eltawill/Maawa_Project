@@ -20,5 +20,16 @@ return [
     'status' => 'Status',
     'status_confirmed' => 'Confirmed',
     'status_failed' => 'Payment Failed',
+    
+    // New - Booking Request
+    'booking_request_subject' => 'Maawa – New Booking Request #:id',
+    
+    // New - Owner Decision
+    'booking_accepted_subject' => 'Maawa – Booking #:id Accepted',
+    'booking_rejected_subject' => 'Maawa – Booking #:id Rejected',
+    
+    // New - Proposal Status
+    'proposal_approved_subject' => 'Maawa – Proposal #:id Approved',
+    'proposal_rejected_subject' => 'Maawa – Proposal #:id Rejected',
 ];
 

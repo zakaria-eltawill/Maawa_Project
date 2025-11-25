@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AdminPanel;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendProposalStatusNotification;
 use App\Models\Proposal;
 use App\Models\Property;
 use App\Services\AuditLogger;
@@ -224,6 +225,9 @@ class ProposalController extends Controller
                 ]
             );
         }
+
+        // Send notification to owner about proposal status
+        SendProposalStatusNotification::dispatch($proposal);
 
         $message = $decision === 'APPROVED' 
             ? __('admin.proposal_approved') 

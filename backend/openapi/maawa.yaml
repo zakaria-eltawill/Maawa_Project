@@ -329,7 +329,7 @@ paths:
         - **Admin:** Returns all bookings with complete information (full management access)
         
         **Response includes:**
-        - Booking details (id, check_in, check_out, guests, total, status)
+        - Booking details (id, check_in, check_out, guests, total, status, is_paid)
         - Nested property details (id, title, type, city, price, thumbnail)
         - Nested tenant details (id, name, email, phone_number, region)
       parameters:
@@ -348,6 +348,17 @@ paths:
     post:
       tags: [Bookings]
       summary: Create booking (PENDING)
+      description: |
+        Create a new booking request. The booking is created with PENDING status.
+        
+        **Conflict Prevention:**
+        Uses strict Airbnb-style overlap detection. Returns 409 Conflict if dates overlap with existing PENDING, ACCEPTED, or CONFIRMED bookings.
+        
+        **Notifications:**
+        - Push notification is automatically sent to the property owner
+        - Owner receives notification with booking details (property, dates, guests, total)
+        
+        **Idempotency:** Use X-Idempotency-Key header to prevent duplicate bookings
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -531,6 +542,17 @@ paths:
     post:
       tags: [Bookings]
       summary: Owner decision (ACCEPT/REJECT)
+      description: |
+        Owner accepts or rejects a booking request.
+        
+        **Status Changes:**
+        - ACCEPT: PENDING → ACCEPTED (sets payment_due_at to 24 hours from now)
+        - REJECT: PENDING → REJECTED
+        
+        **Notifications:**
+        - Push notification is automatically sent to the tenant
+        - If ACCEPTED: Notification includes payment reminder with due date
+        - If REJECTED: Notification informs tenant that booking was rejected
       parameters:
         - $ref: '#/components/parameters/Id'
       requestBody:
@@ -785,6 +807,10 @@ paths:
         - Booking status is changed to CANCELED
         - This action cannot be undone
         
+        **Notifications:**
+        - Push notification + email sent to both tenant and owner
+        - Both parties are notified that the booking has been canceled by administrator
+        
         **Use Cases:**
         - Cancel bookings due to tenant violations
         - Cancel bookings due to property issues
@@ -822,6 +848,18 @@ paths:
     post:
       tags: [Admin]
       summary: Review proposal (APPROVED/REJECTED)
+      description: |
+        **Admin-only endpoint** - Approve or reject a proposal.
+        
+        **Proposal Actions:**
+        - APPROVED: Applies the proposal (creates/updates/deletes property based on type)
+        - REJECTED: Marks proposal as rejected (no property changes)
+        
+        **Notifications:**
+        - Push notification is automatically sent to the proposal owner
+        - Owner receives notification whether proposal was approved or rejected
+        
+        **Idempotency:** Use X-Idempotency-Key header to prevent duplicate reviews
       parameters:
         - $ref: '#/components/parameters/Id'
         - $ref: '#/components/parameters/IdempotencyKey'

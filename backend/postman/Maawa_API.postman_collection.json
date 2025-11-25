@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "maawa-api-v1",
 		"name": "Maawa API v1",
-		"description": "Complete API collection for Maawa property rental marketplace.\n\n## Features:\n- JWT Authentication (access + refresh tokens)\n- User Management (phone_number in Libyan format: 09XXXXXXXX)\n- Property Listings & Management\n- Booking System with Conflict Prevention\n- Owner Decisions (Accept/Reject Bookings)\n- Proposal System\n- Review System\n- Push Notifications (FCM)\n- Role-Based Access Control (Tenant, Owner, Admin)\n\n## Role-Based Access:\n- **Tenant:** Can explore all properties, see own bookings\n- **Owner:** Can see own properties, all bookings on their properties\n- **Admin:** Full access to all properties and bookings with complete information\n\n## Important Notes:\n- Phone numbers must be 10 digits starting with 09 (e.g., 0912345678)\n- Bookings use strict Airbnb-style overlap prevention (returns 409 Conflict)\n- Properties endpoint filters by role (Tenant: all, Owner: own, Admin: all)\n- Bookings endpoint filters by role (Tenant: own, Owner: property bookings, Admin: all)\n- Admin notifications are managed via web admin panel\n- Payment confirmations automatically send push + email notifications\n- Profile updates require current_password when changing password\n- All timestamps use ISO 8601 format",
+		"description": "Complete API collection for Maawa property rental marketplace.\n\n## Features:\n- JWT Authentication (access + refresh tokens)\n- User Management (phone_number in Libyan format: 09XXXXXXXX)\n- Property Listings & Management\n- Booking System with Conflict Prevention\n- Owner Decisions (Accept/Reject Bookings)\n- Proposal System\n- Review System\n- Push Notifications (FCM V1 API)\n- Email Notifications (SMTP)\n- Role-Based Access Control (Tenant, Owner, Admin)\n\n## Role-Based Access:\n- **Tenant:** Can explore all properties, see own bookings\n- **Owner:** Can see own properties, all bookings on their properties\n- **Admin:** Full access to all properties and bookings with complete information\n\n## Notification System:\n- **Booking Created (PENDING):** Push notification to owner\n- **Owner Decision (ACCEPT/REJECT):** Push notification to tenant (with payment reminder if accepted)\n- **Payment Success (CONFIRMED):** Push + email to both tenant and owner\n- **Payment Failed (FAILED):** Push + email to both tenant and owner\n- **Admin Cancellation (CANCELED):** Push + email to both tenant and owner\n- **Proposal Review (APPROVED/REJECTED):** Push notification to owner\n\n## Important Notes:\n- Phone numbers must be 10 digits starting with 09 (e.g., 0912345678)\n- Bookings use strict Airbnb-style overlap prevention (returns 409 Conflict)\n- Properties endpoint filters by role (Tenant: all, Owner: own, Admin: all)\n- Bookings endpoint filters by role (Tenant: own, Owner: property bookings, Admin: all)\n- All notifications are queued and processed asynchronously\n- FCM tokens must be registered via `/v1/me/fcm-tokens` endpoint\n- Profile updates require current_password when changing password\n- All timestamps use ISO 8601 format",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "maawa"
 	},
@@ -429,14 +429,7 @@
 								{"key": "per_page", "value": "20", "description": "Results per page (max 50)"}
 							]
 						},
-						"description": "Get all properties owned by the authenticated owner.\n\n**Owner-specific endpoint** - Returns all properties owned by the authenticated owner with full details.\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n\n**Response includes:**
-- Full property details with all photos (handles both string URLs and array format)
-- Statistics (bookings_count, reviews_count, avg_rating, total_revenue)
-- Version number for conflict prevention
-- Note: Owner information is not included (owner already knows their own info)\n\n**Use this endpoint for:**
-- Displaying owner's property list with images
-- Showing property cards with complete information
-- Accessing owner-specific data for editing\n\n**Authentication:** Bearer token required (owner role)"
+						"description": "Get all properties owned by the authenticated owner.\n\n**Owner-specific endpoint** - Returns all properties owned by the authenticated owner with full details.\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n\n**Response includes:**\n- Full property details with all photos (handles both string URLs and array format)\n- Statistics (bookings_count, reviews_count, avg_rating, total_revenue)\n- Version number for conflict prevention\n- Note: Owner information is not included (owner already knows their own info)\n\n**Use this endpoint for:**\n- Displaying owner's property list with images\n- Showing property cards with complete information\n- Accessing owner-specific data for editing\n\n**Authentication:** Bearer token required (owner role)"
 					},
 					"response": []
 				},
@@ -462,14 +455,7 @@
 								}
 							]
 						},
-						"description": "Get detailed information about a specific property owned by the authenticated owner.\n\n**Owner-specific endpoint** - Returns detailed property information with owner-specific data.\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n**Authorization:** Owner can only access their own properties (403 if property belongs to another owner)\n\n**Response includes:**
-- Full property details with all photos (handles both string URLs and array format)
-- Statistics (bookings_count, reviews_count, avg_rating, total_revenue)
-- Version number for conflict prevention
-- Note: Owner information is not included (owner already knows their own info)\n\n**Use this endpoint for:**
-- Property detail page for owners
-- Edit property form (pre-fill with current data)
-- Viewing owner-specific statistics\n\n**Authentication:** Bearer token required (owner role)"
+						"description": "Get detailed information about a specific property owned by the authenticated owner.\n\n**Owner-specific endpoint** - Returns detailed property information with owner-specific data.\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n**Authorization:** Owner can only access their own properties (403 if property belongs to another owner)\n\n**Response includes:**\n- Full property details with all photos (handles both string URLs and array format)\n- Statistics (bookings_count, reviews_count, avg_rating, total_revenue)\n- Version number for conflict prevention\n- Note: Owner information is not included (owner already knows their own info)\n\n**Use this endpoint for:**\n- Property detail page for owners\n- Edit property form (pre-fill with current data)\n- Viewing owner-specific statistics\n\n**Authentication:** Bearer token required (owner role)"
 					},
 					"response": []
 				},
@@ -508,25 +494,7 @@
 								}
 							]
 						},
-						"description": "Create an EDIT proposal for a property owned by the authenticated owner.\n\n**Owner-specific endpoint** - Creates a PENDING proposal that requires admin approval.\n\n**Workflow:**
-1. Owner submits property changes via this endpoint
-2. System creates a PENDING proposal
-3. Admin reviews and approves/rejects in admin panel
-4. If approved, property is updated with new information
-5. Property appears in owner's properties list with updated data\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n**Authorization:** Owner can only create proposals for their own properties (403 if property belongs to another owner)\n\n**Proposal Rules:**
-- All fields are optional (partial updates supported)
-- Only include fields you want to update
-- Version is automatically set from current property version
-- Photos must be valid URLs (from /v1/upload endpoint)\n\n**Request Body (all fields optional):**
-- title: Property title (max 200 chars)
-- description: Property description (max 5000 chars)
-- city: City name (max 80 chars)
-- type: Property type (apartment, villa, chalet)
-- price: Price per night (min 0)
-- location: Location object with latitude, longitude, map_url
-- amenities: Array of amenity strings (max 50 chars each)
-- photos: Array of photo URLs (max 20 photos, from /v1/upload)
-- unavailable_dates: Array of date strings\n\n**Response:**\n```json\n{\n  \"id\": \"proposal-uuid\",\n  \"status\": \"PENDING\",\n  \"message\": \"Edit proposal created. Waiting for admin approval.\"\n}\n```\n\n**Note:** Property is NOT updated immediately. Changes are pending admin approval.\n\n**Authentication:** Bearer token required (owner role)"
+						"description": "Create an EDIT proposal for a property owned by the authenticated owner.\n\n**Owner-specific endpoint** - Creates a PENDING proposal that requires admin approval.\n\n**Workflow:**\n1. Owner submits property changes via this endpoint\n2. System creates a PENDING proposal\n3. Admin reviews and approves/rejects in admin panel\n4. If approved, property is updated with new information\n5. Property appears in owner's properties list with updated data\n\n**Access:** Only owners can access (403 Forbidden for tenants/admins)\n**Authorization:** Owner can only create proposals for their own properties (403 if property belongs to another owner)\n\n**Proposal Rules:**\n- All fields are optional (partial updates supported)\n- Only include fields you want to update\n- Version is automatically set from current property version\n- Photos must be valid URLs (from /v1/upload endpoint)\n\n**Request Body (all fields optional):**\n- title: Property title (max 200 chars)\n- description: Property description (max 5000 chars)\n- city: City name (max 80 chars)\n- type: Property type (apartment, villa, chalet)\n- price: Price per night (min 0)\n- location: Location object with latitude, longitude, map_url\n- amenities: Array of amenity strings (max 50 chars each)\n- photos: Array of photo URLs (max 20 photos, from /v1/upload)\n- unavailable_dates: Array of date strings\n\n**Response:**\n```json\n{\n  \"id\": \"proposal-uuid\",\n  \"status\": \"PENDING\",\n  \"message\": \"Edit proposal created. Waiting for admin approval.\"\n}\n```\n\n**Note:** Property is NOT updated immediately. Changes are pending admin approval.\n\n**Authentication:** Bearer token required (owner role)"
 					},
 					"response": []
 				}
@@ -630,7 +598,7 @@
 								"bookings"
 							]
 						},
-						"description": "Create a new booking (status: PENDING).\n\n**Required Fields:**\n- property_id (UUID)\n- check_in (date, must be today or future)\n- check_out (date, must be after check_in)\n- guests (integer, min: 1)\n\n**Conflict Prevention:**\nUses strict Airbnb-style overlap detection. Returns 409 Conflict if dates overlap with existing PENDING, ACCEPTED, or CONFIRMED bookings.\n\n**Returns:**\n- 201 Created: Booking created successfully\n- 409 Conflict: Date range unavailable (detail: 'date_range_unavailable')\n- 422 Unprocessable Entity: Validation errors\n\n**Authentication:** Bearer token required (tenant role)"
+						"description": "Create a new booking (status: PENDING).\n\n**Required Fields:**\n- property_id (UUID)\n- check_in (date, must be today or future)\n- check_out (date, must be after check_in)\n- guests (integer, min: 1)\n\n**Conflict Prevention:**\nUses strict Airbnb-style overlap detection. Returns 409 Conflict if dates overlap with existing PENDING, ACCEPTED, or CONFIRMED bookings.\n\n**Notifications:**\n- Push notification sent to property owner about new booking request\n- Owner receives notification with booking details (property, dates, guests, total)\n\n**Returns:**\n- 201 Created: Booking created successfully\n- 409 Conflict: Date range unavailable (detail: 'date_range_unavailable')\n- 422 Unprocessable Entity: Validation errors\n\n**Authentication:** Bearer token required (tenant role)"
 					},
 					"response": []
 				},
@@ -1107,7 +1075,7 @@
 								}
 							]
 						},
-						"description": "Owner accepts or rejects a booking.\n\n**Required Fields:**\n- decision ('ACCEPT' or 'REJECT')\n- reason (optional, string)\n\n**Authorization:**\n- Only property owners can make decisions\n- Only for their own properties\n- Only for PENDING bookings\n\n**Status Changes:**\n- ACCEPT: PENDING → ACCEPTED\n- REJECT: PENDING → REJECTED\n\n**Returns:**\n- 200 OK: Decision recorded successfully\n- 403 Forbidden: Not authorized\n- 422 Unprocessable Entity: Invalid status or decision\n\n**Authentication:** Bearer token required (owner role)"
+						"description": "Owner accepts or rejects a booking.\n\n**Required Fields:**\n- decision ('ACCEPT' or 'REJECT')\n- reason (optional, string)\n\n**Authorization:**\n- Only property owners can make decisions\n- Only for their own properties\n- Only for PENDING bookings\n\n**Status Changes:**\n- ACCEPT: PENDING → ACCEPTED (sets payment_due_at to 24 hours from now)\n- REJECT: PENDING → REJECTED\n\n**Notifications:**\n- Push notification sent to tenant about owner's decision\n- If ACCEPTED: Notification includes payment reminder with due date\n- If REJECTED: Notification informs tenant that booking was rejected\n\n**Returns:**\n- 200 OK: Decision recorded successfully\n- 403 Forbidden: Not authorized\n- 422 Unprocessable Entity: Invalid status or decision\n\n**Authentication:** Bearer token required (owner role)"
 					},
 					"response": []
 				}
@@ -1667,7 +1635,7 @@
 								}
 							]
 						},
-						"description": "Review proposal (APPROVED/REJECTED)"
+						"description": "Review proposal (APPROVED/REJECTED).\n\n**Admin-only endpoint** - Approve or reject a proposal.\n\n**Required Fields:**\n- decision ('APPROVED' or 'REJECTED')\n- notes (optional, string)\n\n**Proposal Actions:**\n- APPROVED: Applies the proposal (creates/updates/deletes property based on type)\n- REJECTED: Marks proposal as rejected (no property changes)\n\n**Notifications:**\n- Push notification sent to proposal owner about the decision\n- Owner receives notification whether proposal was approved or rejected\n\n**Returns:**\n- 200 OK: Proposal reviewed successfully\n- 401 Unauthorized: Missing or invalid authentication token\n- 403 Forbidden: Not an admin\n- 404 Not Found: Proposal not found\n- 409 Conflict: Proposal already reviewed\n- 422 Unprocessable Entity: Validation errors\n\n**Authentication:** Bearer token required (admin role)"
 					},
 					"response": []
 				},
@@ -1700,7 +1668,7 @@
 								}
 							]
 						},
-						"description": "Cancel a booking (Admin only).\n\n**Admin-only endpoint** - Cancel a booking.\n\n**Cancel Rules:**\n- Only admins can cancel bookings\n- Can only cancel bookings with status: PENDING, ACCEPTED, or CONFIRMED\n- Booking status is changed to CANCELED\n- This action cannot be undone\n\n**Use Cases:**\n- Cancel bookings due to tenant violations\n- Cancel bookings due to property issues\n- Cancel bookings for administrative reasons\n\n**Response:**\n```json\n{\n  \"id\": \"booking-uuid\",\n  \"status\": \"CANCELED\",\n  \"message\": \"Booking has been canceled successfully.\"\n}\n```\n\n**Status Codes:**\n- 200 OK: Booking canceled successfully\n- 400 Bad Request: Booking cannot be canceled (not PENDING, ACCEPTED, or CONFIRMED)\n- 401 Unauthorized: Missing or invalid authentication token\n- 403 Forbidden: Not an admin\n- 404 Not Found: Booking not found\n\n**Authentication:** Bearer token required (admin role)"
+						"description": "Cancel a booking (Admin only).\n\n**Admin-only endpoint** - Cancel a booking.\n\n**Cancel Rules:**\n- Only admins can cancel bookings\n- Can only cancel bookings with status: PENDING, ACCEPTED, or CONFIRMED\n- Booking status is changed to CANCELED\n- This action cannot be undone\n\n**Notifications:**\n- Push notification + email sent to both tenant and owner\n- Both parties are notified that the booking has been canceled by administrator\n\n**Use Cases:**\n- Cancel bookings due to tenant violations\n- Cancel bookings due to property issues\n- Cancel bookings for administrative reasons\n\n**Response:**\n```json\n{\n  \"id\": \"booking-uuid\",\n  \"status\": \"CANCELED\",\n  \"message\": \"Booking has been canceled successfully.\"\n}\n```\n\n**Status Codes:**\n- 200 OK: Booking canceled successfully\n- 400 Bad Request: Booking cannot be canceled (not PENDING, ACCEPTED, or CONFIRMED)\n- 401 Unauthorized: Missing or invalid authentication token\n- 403 Forbidden: Not an admin\n- 404 Not Found: Booking not found\n\n**Authentication:** Bearer token required (admin role)"
 					},
 					"response": []
 				},
@@ -1751,7 +1719,7 @@
 								}
 							]
 						},
-						"description": "Review proposal (APPROVED/REJECTED)"
+						"description": "Review proposal (APPROVED/REJECTED).\n\n**Admin-only endpoint** - Approve or reject a proposal.\n\n**Required Fields:**\n- decision ('APPROVED' or 'REJECTED')\n- notes (optional, string)\n\n**Proposal Actions:**\n- APPROVED: Applies the proposal (creates/updates/deletes property based on type)\n- REJECTED: Marks proposal as rejected (no property changes)\n\n**Notifications:**\n- Push notification sent to proposal owner about the decision\n- Owner receives notification whether proposal was approved or rejected\n\n**Returns:**\n- 200 OK: Proposal reviewed successfully\n- 401 Unauthorized: Missing or invalid authentication token\n- 403 Forbidden: Not an admin\n- 404 Not Found: Proposal not found\n- 409 Conflict: Proposal already reviewed\n- 422 Unprocessable Entity: Validation errors\n\n**Authentication:** Bearer token required (admin role)"
 					},
 					"response": []
                 },

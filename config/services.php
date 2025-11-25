@@ -36,6 +36,18 @@ return [
     ],
 
     'fcm' => [
+        'project_id' => env('FCM_PROJECT_ID', 'maawa-project'),
+        'service_account' => [
+            'type' => env('FCM_SA_TYPE', 'service_account'),
+            'project_id' => env('FCM_SA_PROJECT_ID'),
+            'private_key_id' => env('FCM_SA_PRIVATE_KEY_ID'),
+            'private_key' => env('FCM_SA_PRIVATE_KEY'),
+            'client_email' => env('FCM_SA_CLIENT_EMAIL'),
+            'client_id' => env('FCM_SA_CLIENT_ID'),
+            'auth_uri' => env('FCM_SA_AUTH_URI', 'https://accounts.google.com/o/oauth2/auth'),
+            'token_uri' => env('FCM_SA_TOKEN_URI', 'https://oauth2.googleapis.com/token'),
+        ],
+        // Legacy support (deprecated)
         'server_key' => env('FCM_SERVER_KEY'),
     ],
 

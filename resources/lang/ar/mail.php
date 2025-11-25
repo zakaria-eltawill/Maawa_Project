@@ -20,5 +20,16 @@ return [
     'status' => 'الحالة',
     'status_confirmed' => 'مؤكد',
     'status_failed' => 'فشل الدفع',
+    
+    // New - Booking Request
+    'booking_request_subject' => 'مأوى – طلب حجز جديد رقم :id',
+    
+    // New - Owner Decision
+    'booking_accepted_subject' => 'مأوى – تم قبول الحجز رقم :id',
+    'booking_rejected_subject' => 'مأوى – تم رفض الحجز رقم :id',
+    
+    // New - Proposal Status
+    'proposal_approved_subject' => 'مأوى – تم الموافقة على الاقتراح رقم :id',
+    'proposal_rejected_subject' => 'مأوى – تم رفض الاقتراح رقم :id',
 ];
 

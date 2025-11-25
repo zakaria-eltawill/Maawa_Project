@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ReviewProposalRequest;
 use App\Http\Resources\Proposal\ProposalResource;
+use App\Jobs\SendProposalStatusNotification;
 use App\Models\Proposal;
 use App\Models\Property;
 use Illuminate\Http\JsonResponse;
@@ -95,6 +96,9 @@ class ProposalController extends Controller
             'notes' => $request->notes,
             'applied_at' => $appliedAt,
         ]);
+
+        // Send notification to owner about proposal status
+        SendProposalStatusNotification::dispatch($proposal);
 
         return response()->json([
             'id' => $proposal->id,

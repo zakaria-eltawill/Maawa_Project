@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Booking\OwnerDecisionRequest;
 use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Http\Resources\Booking\BookingResource;
+use App\Jobs\SendBookingCreatedNotification;
+use App\Jobs\SendOwnerDecisionNotification;
 use App\Models\Booking;
 use App\Models\Property;
 use App\Services\Booking\AvailabilityService;
@@ -122,6 +124,9 @@ class BookingController extends Controller
                 'status' => 'PENDING',
             ]);
         });
+
+        // Send notification to property owner about new booking request
+        SendBookingCreatedNotification::dispatch($booking);
 
         return response()->json([
             'id' => $booking->id,
@@ -369,6 +374,9 @@ class BookingController extends Controller
             'status' => $decision,
             'payment_due_at' => $paymentDueAt,
         ]);
+
+        // Send notification to tenant about owner's decision
+        SendOwnerDecisionNotification::dispatch($booking);
 
         return response()->json([
             'id' => $booking->id,
