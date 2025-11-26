@@ -47,11 +47,20 @@
         <div class="flex items-end">
             <button 
                 type="submit"
-                class="w-full h-[48px] bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                {{ __('admin.generate_report') }}
+                class="group relative w-full h-[48px] bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 text-white px-6 rounded-xl font-semibold shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden">
+                <!-- Animated background gradient -->
+                <div class="absolute inset-0 bg-gradient-to-r from-pink-600 via-purple-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                <!-- Shine effect on hover -->
+                <div class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                
+                <!-- Content -->
+                <span class="relative z-10 flex items-center gap-2">
+                    <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="group-hover:translate-x-0.5 transition-transform duration-300">{{ __('admin.generate_report') }}</span>
+                </span>
             </button>
         </div>
     </form>
@@ -152,8 +161,8 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($exports as $export)
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">
-                            {{ $export->type }}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ __('admin.report_type_' . $export->type) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 uppercase">
                             {{ $export->filters['format'] ?? 'csv' }}
