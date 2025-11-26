@@ -47,7 +47,7 @@
         <div class="flex items-end">
             <button 
                 type="submit"
-                class="group relative w-full h-[48px] bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 text-white px-6 rounded-xl font-semibold shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden">
+                class="group relative w-full bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 text-white px-5 py-3 rounded-xl font-semibold shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden">
                 <!-- Animated background gradient -->
                 <div class="absolute inset-0 bg-gradient-to-r from-pink-600 via-purple-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 
