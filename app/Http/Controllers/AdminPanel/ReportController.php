@@ -33,7 +33,7 @@ class ReportController extends Controller
         $export = Export::create([
             'type' => $request->type,
             'filters' => [
-                'format' => $request->format,
+                'format' => 'csv',
                 'from' => $request->from,
                 'to' => $request->to,
             ],
@@ -70,12 +70,10 @@ class ReportController extends Controller
             abort(404, 'Export file not found');
         }
 
-        $format = $export->filters['format'] ?? 'csv';
-        $extension = $format === 'pdf' ? 'pdf' : 'csv';
-        $filename = "{$export->type}_report_{$export->created_at->format('Y-m-d_His')}.{$extension}";
+        $filename = "{$export->type}_report_{$export->created_at->format('Y-m-d_His')}.csv";
 
         return response()->download($fullPath, $filename, [
-            'Content-Type' => $format === 'pdf' ? 'application/pdf' : 'text/csv',
+            'Content-Type' => 'text/csv',
         ]);
     }
 }

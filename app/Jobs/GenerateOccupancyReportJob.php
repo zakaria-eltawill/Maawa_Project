@@ -4,14 +4,12 @@ namespace App\Jobs;
 
 use App\Models\Booking;
 use App\Models\Property;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class GenerateOccupancyReportJob extends GenerateReportJob
 {
     protected function generateFile(): string
     {
-        $format = $this->getFormat();
         $filters = $this->export->filters;
         $from = Carbon::parse($filters['from']);
         $to = Carbon::parse($filters['to']);
@@ -42,11 +40,7 @@ class GenerateOccupancyReportJob extends GenerateReportJob
             ->filter(fn($item) => $item['total_bookings'] > 0)
             ->sortByDesc('total_nights');
 
-        if ($format === 'csv') {
-            return $this->generateCsv($properties, $from, $to);
-        } else {
-            return $this->generatePdf($properties, $from, $to);
-        }
+        return $this->generateCsv($properties, $from, $to);
     }
 
     private function generateCsv($properties, $from, $to): string
@@ -93,31 +87,6 @@ class GenerateOccupancyReportJob extends GenerateReportJob
         }
 
         fclose($file);
-
-        return $filePath;
-    }
-
-    private function generatePdf($properties, $from, $to): string
-    {
-        $filePath = $this->getStoragePath();
-        $fullPath = storage_path("app/{$filePath}");
-
-        // Ensure directory exists
-        $directory = dirname($fullPath);
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        $html = view('admin.reports.pdf.occupancy', [
-            'properties' => $properties,
-            'from' => $from,
-            'to' => $to,
-            'totalProperties' => $properties->count(),
-        ])->render();
-
-        $pdf = Pdf::loadHTML($html);
-        $pdf->setPaper('a4', 'landscape');
-        $pdf->save($fullPath);
 
         return $filePath;
     }

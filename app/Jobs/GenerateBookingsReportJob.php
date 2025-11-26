@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\Booking;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -11,7 +10,6 @@ class GenerateBookingsReportJob extends GenerateReportJob
 {
     protected function generateFile(): string
     {
-        $format = $this->getFormat();
         $filters = $this->export->filters;
         $from = Carbon::parse($filters['from']);
         $to = Carbon::parse($filters['to']);
@@ -22,11 +20,7 @@ class GenerateBookingsReportJob extends GenerateReportJob
             ->orderBy('created_at', 'desc')
             ->get();
 
-        if ($format === 'csv') {
-            return $this->generateCsv($bookings, $from, $to);
-        } else {
-            return $this->generatePdf($bookings, $from, $to);
-        }
+        return $this->generateCsv($bookings, $from, $to);
     }
 
     private function generateCsv($bookings, $from, $to): string
@@ -87,32 +81,6 @@ class GenerateBookingsReportJob extends GenerateReportJob
         }
 
         fclose($file);
-
-        return $filePath;
-    }
-
-    private function generatePdf($bookings, $from, $to): string
-    {
-        $filePath = $this->getStoragePath();
-        $fullPath = storage_path("app/{$filePath}");
-
-        // Ensure directory exists
-        $directory = dirname($fullPath);
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        $html = view('admin.reports.pdf.bookings', [
-            'bookings' => $bookings,
-            'from' => $from,
-            'to' => $to,
-            'totalBookings' => $bookings->count(),
-            'totalRevenue' => $bookings->sum('total'),
-        ])->render();
-
-        $pdf = Pdf::loadHTML($html);
-        $pdf->setPaper('a4', 'landscape');
-        $pdf->save($fullPath);
 
         return $filePath;
     }

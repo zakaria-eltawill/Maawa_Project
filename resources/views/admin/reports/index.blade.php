@@ -25,16 +25,7 @@
                 <option value="revenue">{{ __('admin.report_revenue') }}</option>
             </select>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
-            <select 
-                name="format" 
-                required
-                class="w-full px-5 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition">
-                <option value="csv">CSV</option>
-                <option value="pdf">PDF</option>
-            </select>
-        </div>
+        <input type="hidden" name="format" value="csv">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('admin.from_date') }}</label>
             <input 

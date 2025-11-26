@@ -37,7 +37,7 @@ abstract class GenerateReportJob implements ShouldQueue
             Log::info('Report generated successfully', [
                 'export_id' => $this->export->id,
                 'type' => $this->export->type,
-                'format' => $this->getFormat(),
+                'format' => 'csv',
                 'file_path' => $filePath,
             ]);
         } catch (\Exception $e) {
@@ -59,17 +59,11 @@ abstract class GenerateReportJob implements ShouldQueue
 
     abstract protected function generateFile(): string;
 
-    protected function getFormat(): string
-    {
-        return $this->export->filters['format'] ?? 'csv';
-    }
-
     protected function getStoragePath(): string
     {
-        $format = $this->getFormat();
         $type = $this->export->type;
         $timestamp = now()->format('Y-m-d_His');
-        $filename = "{$type}_report_{$timestamp}.{$format}";
+        $filename = "{$type}_report_{$timestamp}.csv";
 
         return "exports/{$filename}";
     }

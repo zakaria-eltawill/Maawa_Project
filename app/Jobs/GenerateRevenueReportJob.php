@@ -4,14 +4,12 @@ namespace App\Jobs;
 
 use App\Models\Booking;
 use App\Models\Property;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class GenerateRevenueReportJob extends GenerateReportJob
 {
     protected function generateFile(): string
     {
-        $format = $this->getFormat();
         $filters = $this->export->filters;
         $from = Carbon::parse($filters['from']);
         $to = Carbon::parse($filters['to']);
@@ -39,11 +37,7 @@ class GenerateRevenueReportJob extends GenerateReportJob
             ->filter(fn($item) => $item['total_revenue'] > 0)
             ->sortByDesc('total_revenue');
 
-        if ($format === 'csv') {
-            return $this->generateCsv($properties, $from, $to);
-        } else {
-            return $this->generatePdf($properties, $from, $to);
-        }
+        return $this->generateCsv($properties, $from, $to);
     }
 
     private function generateCsv($properties, $from, $to): string
@@ -98,38 +92,6 @@ class GenerateRevenueReportJob extends GenerateReportJob
         fputcsv($file, ['TOTAL', '', '', '', number_format($totalRevenue, 2), $totalBookings, number_format($overallAverage, 2), '']);
 
         fclose($file);
-
-        return $filePath;
-    }
-
-    private function generatePdf($properties, $from, $to): string
-    {
-        $filePath = $this->getStoragePath();
-        $fullPath = storage_path("app/{$filePath}");
-
-        // Ensure directory exists
-        $directory = dirname($fullPath);
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        $totalRevenue = $properties->sum(fn($item) => $item['total_revenue']);
-        $totalBookings = $properties->sum(fn($item) => $item['booking_count']);
-        $overallAverage = $totalBookings > 0 ? $totalRevenue / $totalBookings : 0;
-
-        $html = view('admin.reports.pdf.revenue', [
-            'properties' => $properties,
-            'from' => $from,
-            'to' => $to,
-            'totalProperties' => $properties->count(),
-            'totalRevenue' => $totalRevenue,
-            'totalBookings' => $totalBookings,
-            'overallAverage' => $overallAverage,
-        ])->render();
-
-        $pdf = Pdf::loadHTML($html);
-        $pdf->setPaper('a4', 'landscape');
-        $pdf->save($fullPath);
 
         return $filePath;
     }
