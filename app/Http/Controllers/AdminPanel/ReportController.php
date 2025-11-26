@@ -9,7 +9,7 @@ use App\Jobs\GenerateOccupancyReportJob;
 use App\Jobs\GenerateRevenueReportJob;
 use App\Models\Export;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -51,7 +51,7 @@ class ReportController extends Controller
         return back()->with('success', __('admin.export_queued', [], 'en'));
     }
 
-    public function download(Export $export): Response
+    public function download(Export $export): BinaryFileResponse
     {
 
         // Check if user owns this export or is admin
