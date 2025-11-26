@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Booking;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -109,7 +110,7 @@ class GenerateBookingsReportJob extends GenerateReportJob
             'totalRevenue' => $bookings->sum('total'),
         ])->render();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+        $pdf = Pdf::loadHTML($html);
         $pdf->setPaper('a4', 'landscape');
         $pdf->save($fullPath);
 

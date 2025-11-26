@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Booking;
 use App\Models\Property;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class GenerateRevenueReportJob extends GenerateReportJob
@@ -126,7 +127,7 @@ class GenerateRevenueReportJob extends GenerateReportJob
             'overallAverage' => $overallAverage,
         ])->render();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+        $pdf = Pdf::loadHTML($html);
         $pdf->setPaper('a4', 'landscape');
         $pdf->save($fullPath);
 

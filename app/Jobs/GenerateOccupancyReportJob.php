@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Booking;
 use App\Models\Property;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class GenerateOccupancyReportJob extends GenerateReportJob
@@ -114,7 +115,7 @@ class GenerateOccupancyReportJob extends GenerateReportJob
             'totalProperties' => $properties->count(),
         ])->render();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+        $pdf = Pdf::loadHTML($html);
         $pdf->setPaper('a4', 'landscape');
         $pdf->save($fullPath);
 
