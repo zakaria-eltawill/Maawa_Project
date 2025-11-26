@@ -7,12 +7,12 @@
 <!-- Report Generation Form -->
 <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-100 p-8 mb-8">
     <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center">
-        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 {{ $isRtl ? 'ml-2' : 'mr-2' }} text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
         {{ __('admin.generate_report') }}
     </h3>
-    <form method="POST" action="{{ route('admin.reports.export') }}" class="grid grid-cols-1 md:grid-cols-5 gap-6">
+    <form method="POST" action="{{ route('admin.reports.export') }}" class="grid grid-cols-1 md:grid-cols-4 gap-6">
         @csrf
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('admin.report_type') }}</label>
@@ -47,11 +47,11 @@
         <div class="flex items-end">
             <button 
                 type="submit"
-                class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="w-full h-[48px] bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
-                Generate Report
+                {{ __('admin.generate_report') }}
             </button>
         </div>
     </form>
@@ -117,7 +117,7 @@
 <!-- Recent Exports -->
 <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-100 p-8">
     <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center">
-        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 {{ $isRtl ? 'ml-2' : 'mr-2' }} text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
         {{ __('admin.recent_exports') }}
@@ -141,12 +141,12 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Format</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Range</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.type') }}</th>
+                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.format') }}</th>
+                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.date_range') }}</th>
+                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.status') }}</th>
+                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.created_at') }}</th>
+                        <th class="px-6 py-3 {{ $isRtl ? 'text-right' : 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -159,20 +159,20 @@
                             {{ $export->filters['format'] ?? 'csv' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ \Carbon\Carbon::parse($export->filters['from'])->format('Y-m-d') }} to {{ \Carbon\Carbon::parse($export->filters['to'])->format('Y-m-d') }}
+                            {{ \Carbon\Carbon::parse($export->filters['from'])->format('Y-m-d') }} {{ __('admin.to') }} {{ \Carbon\Carbon::parse($export->filters['to'])->format('Y-m-d') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($export->status === 'READY')
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Ready
+                                    {{ __('admin.statuses.READY') }}
                                 </span>
                             @elseif($export->status === 'QUEUED')
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    Processing
+                                    {{ __('admin.processing') }}
                                 </span>
                             @else
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                    Failed
+                                    {{ __('admin.statuses.FAILED') }}
                                 </span>
                             @endif
                         </td>
@@ -180,19 +180,33 @@
                             {{ $export->created_at->format('Y-m-d H:i') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            @if($export->status === 'READY')
-                                <a href="{{ route('admin.reports.download', $export->id) }}" 
-                                   class="text-purple-600 hover:text-purple-900 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                                    </svg>
-                                    Download
-                                </a>
-                            @elseif($export->status === 'FAILED')
-                                <span class="text-red-600 text-xs" title="{{ $export->error_message }}">{{ \Illuminate\Support\Str::limit($export->error_message, 30) }}</span>
-                            @else
-                                <span class="text-gray-400">Processing...</span>
-                            @endif
+                            <div class="flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                @if($export->status === 'READY')
+                                    <a href="{{ route('admin.reports.download', $export->id) }}" 
+                                       class="text-purple-600 hover:text-purple-900 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                        </svg>
+                                        {{ __('admin.download') }}
+                                    </a>
+                                @elseif($export->status === 'FAILED')
+                                    <span class="text-red-600 text-xs" title="{{ $export->error_message }}">{{ \Illuminate\Support\Str::limit($export->error_message, 30) }}</span>
+                                @else
+                                    <span class="text-gray-400">{{ __('admin.processing') }}...</span>
+                                @endif
+                                
+                                @if($export->status !== 'QUEUED')
+                                    <form action="{{ route('admin.reports.destroy', $export->id) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('admin.confirm_delete_export') }}');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 flex items-center gap-1" title="{{ __('admin.delete') }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @endforeach

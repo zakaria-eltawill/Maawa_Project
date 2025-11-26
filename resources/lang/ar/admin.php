@@ -184,6 +184,10 @@ return [
     'payments' => 'المدفوعات',
     'revenue_summary' => 'ملخص الإيرادات',
     'no_exports' => 'لا توجد تصديرات بعد.',
+    'format' => 'الصيغة',
+    'processing' => 'قيد المعالجة',
+    'confirm_delete_export' => 'هل أنت متأكد من حذف هذا التصدير؟ لا يمكن التراجع عن هذا الإجراء.',
+    'export_deleted' => 'تم حذف التصدير بنجاح.',
 
     // Dashboard cards
     'cards' => [

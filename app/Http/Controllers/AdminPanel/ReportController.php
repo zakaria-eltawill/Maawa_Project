@@ -48,7 +48,7 @@ class ReportController extends Controller
             'revenue' => GenerateRevenueReportJob::dispatch($export),
         };
 
-        return back()->with('success', __('admin.export_queued', [], 'en'));
+        return back()->with('success', __('admin.export_queued'));
     }
 
     public function download(Export $export): BinaryFileResponse
@@ -75,5 +75,26 @@ class ReportController extends Controller
         return response()->download($fullPath, $filename, [
             'Content-Type' => 'text/csv',
         ]);
+    }
+
+    public function destroy(Export $export): RedirectResponse
+    {
+        // Check if user owns this export or is admin
+        if ($export->created_by !== auth()->id() && !auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        // Delete the file if it exists
+        if ($export->file_path) {
+            $fullPath = storage_path("app/{$export->file_path}");
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
+            }
+        }
+
+        // Delete the export record
+        $export->delete();
+
+        return back()->with('success', __('admin.export_deleted'));
     }
 }

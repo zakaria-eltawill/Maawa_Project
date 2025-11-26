@@ -82,6 +82,7 @@ Route::prefix('admin')
         Route::get('/reports', [App\Http\Controllers\AdminPanel\ReportController::class, 'index'])->name('reports.index');
         Route::post('/reports/export', [App\Http\Controllers\AdminPanel\ReportController::class, 'export'])->name('reports.export');
         Route::get('/reports/download/{export}', [App\Http\Controllers\AdminPanel\ReportController::class, 'download'])->name('reports.download');
+        Route::delete('/reports/{export}', [App\Http\Controllers\AdminPanel\ReportController::class, 'destroy'])->name('reports.destroy');
 
         // Notifications Log (optional)
         Route::get('/notifications', [App\Http\Controllers\AdminPanel\NotificationController::class, 'index'])->name('notifications.index');

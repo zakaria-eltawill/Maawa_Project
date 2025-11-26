@@ -184,6 +184,10 @@ return [
     'payments' => 'Payments',
     'revenue_summary' => 'Revenue Summary',
     'no_exports' => 'No exports yet.',
+    'format' => 'Format',
+    'processing' => 'Processing',
+    'confirm_delete_export' => 'Are you sure you want to delete this export? This action cannot be undone.',
+    'export_deleted' => 'Export deleted successfully.',
 
     // Dashboard cards
     'cards' => [
