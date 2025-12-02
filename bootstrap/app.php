@@ -75,10 +75,10 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withSchedule(function (Schedule $schedule): void {
-        // Update completed bookings daily at midnight
+        // Update completed bookings hourly to catch bookings faster
+        // This ensures bookings are updated to COMPLETED status within 1 hour of check-out date passing
         $schedule->command('bookings:update-completed')
-            ->daily()
-            ->at('00:00')
+            ->hourly()
             ->withoutOverlapping()
             ->runInBackground();
     })->create();
