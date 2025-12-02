@@ -37,7 +37,7 @@ class FileUploadController extends Controller
         // Get public URL using the request's scheme and host
         // This ensures we use the actual server domain, not localhost
         $scheme = $request->getScheme(); // http or https
-        $host = $request->getHost(); // e.g., 3.68.75.38 or your-domain.com
+        $host = $request->getHost(); // e.g., 3.72.254.198 or your-domain.com
         
         // Handle port if present (for development environments)
         $port = $request->getPort();

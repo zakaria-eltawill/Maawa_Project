@@ -1572,7 +1572,7 @@ components:
             format: uri
             maxLength: 500
           description: Array of photo URLs (from /v1/upload endpoint)
-          example: ["http://3.68.75.38/storage/properties/image1.jpg"]
+          example: ["http://3.72.254.198/storage/properties/image1.jpg"]
         unavailable_dates:
           type: array
           items:
