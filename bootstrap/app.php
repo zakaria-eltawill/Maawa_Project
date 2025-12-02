@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -72,4 +73,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 401);
             }
         });
+    })
+    ->withSchedule(function (Schedule $schedule): void {
+        // Update completed bookings daily at midnight
+        $schedule->command('bookings:update-completed')
+            ->daily()
+            ->at('00:00')
+            ->withoutOverlapping()
+            ->runInBackground();
     })->create();
